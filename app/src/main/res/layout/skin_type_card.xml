@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="160dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="@drawable/border_black">
+
+    <LinearLayout
+        android:id="@+id/toViewItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/gradient_bg_005"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <!-- Product Name -->
+        <TextView
+            android:id="@+id/product_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_medium"
+            android:gravity="center"
+            android:maxLines="2"
+            android:text="Buy Myra Ultimate Softgel Capsule"
+            android:textColor="@color/black"
+            android:textSize="15sp"
+            tools:ignore="HardcodedText,SmallSp" />
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/display_image"
+            android:layout_width="match_parent"
+            android:layout_height="102dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/border_black"
+            android:padding="3dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/product_1"
+            tools:ignore="ContentDescription,RtlHardcoded" />
+
+        <!-- Price -->
+        <TextView
+            android:id="@+id/product_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_medium"
+            android:paddingTop="4dp"
+            android:text="₱208.00"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <!-- Product Description -->
+        <TextView
+            android:id="@+id/product_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_medium"
+            android:maxLines="2"
+            android:paddingTop="4dp"
+            android:text="product description"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText" />
+
+        <!-- Category -->
+        <TextView
+            android:id="@+id/productCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_medium"
+            android:paddingTop="4dp"
+            android:text="Category: Skincare"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText" />
+
+        <!-- Skintype -->
+        <TextView
+            android:id="@+id/productSkinType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/lexend_medium"
+            android:paddingTop="4dp"
+            android:text="Skintype: All Types"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText" />
+
+        <!-- Rating -->
+        <TextView
+            android:id="@+id/ratings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/lexend_medium"
+            android:maxLines="2"
+            android:paddingTop="5dp"
+            android:text="Rating: "
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

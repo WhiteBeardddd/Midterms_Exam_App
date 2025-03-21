@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_bg_004"
+    tools:context=".pages.Checkout">
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="99dp"
+        android:elevation="8dp"
+        android:background="@drawable/gradient_bg_002"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        tools:ignore="MissingConstraints">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="71dp"
+            android:layout_height="74dp"
+            android:layout_gravity="start|center_vertical"
+            android:src="@drawable/beauty_logo"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical"
+            android:text="Beautify"
+            android:textColor="#FFFFFF"
+            android:letterSpacing="0.3"
+            android:fontFamily="@font/grand_hotel_regular"
+            android:textSize="27sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/back_btn"
+        android:layout_width="50dp"
+        android:layout_height="45dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/back_icon"
+        android:backgroundTint="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout"
+        tools:ignore="ContentDescription,MissingConstraints" />
+
+    <!-- Total Price Section -->
+
+    <ListView
+        android:id="@+id/cart_list"
+        android:layout_width="365dp"
+        android:layout_height="550dp"
+        android:background="#D9FFFFFF"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@id/total_price_container"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/back_btn"
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="NotSibling" />
+
+    <!--      PATHS      -->
+
+    <LinearLayout
+        android:id="@+id/total_price_container"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="#FFFFFF"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@id/navigation_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/total_price_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Price: "
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/total_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="₱0.00"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="HardcodedText" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="proceed to payment"
+            android:layout_marginStart="30dp"
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="62dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/gradient_bg_002"
+        android:orientation="horizontal"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="5dp"
+        android:gravity="center"
+        android:weightSum="6"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/toHome"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@drawable/border_inv"
+            android:elevation="8dp"
+            android:src="@drawable/home_icon"
+            tools:ignore="ContentDescription,HardcodedText" />
+
+        <ImageButton
+            android:id="@+id/toRatings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@drawable/border_inv"
+            android:elevation="8dp"
+            android:src="@drawable/popular_icon"
+            tools:ignore="ContentDescription,HardcodedText" />
+
+        <ImageButton
+            android:id="@+id/toSkinTypes"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@drawable/border_inv"
+            android:elevation="8dp"
+            android:src="@drawable/skin_type_icon"
+            tools:ignore="ContentDescription,HardcodedText" />
+
+        <ImageButton
+            android:id="@+id/toFeatured"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@drawable/border_inv"
+            android:elevation="8dp"
+            android:src="@drawable/featured_icon"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/toPayment"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_margin="5dp"
+            android:background="@drawable/border_inv"
+            android:elevation="8dp"
+            android:src="@drawable/check_out_icon"
+            tools:ignore="ContentDescription" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
