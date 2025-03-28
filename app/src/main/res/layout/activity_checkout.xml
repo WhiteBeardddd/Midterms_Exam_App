@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/gradient_bg_004"
-    tools:context=".pages.Checkout">
+    tools:context=".display.Checkout">
 
     <!-- Header -->
     <LinearLayout
@@ -53,28 +53,41 @@
         app:layout_constraintTop_toBottomOf="@id/linearLayout"
         tools:ignore="ContentDescription,MissingConstraints" />
 
-    <!-- Total Price Section -->
+    <TextView
+        android:id="@+id/checkout_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lexend_semibold"
+        android:gravity="center"
+        android:letterSpacing="0.3"
+        android:text="CHECK OUT"
+        android:textColor="#FFFFFF"
+        android:textSize="27sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/back_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="HardcodedText" />
 
     <ListView
         android:id="@+id/cart_list"
-        android:layout_width="365dp"
+        android:layout_width="385dp"
         android:layout_height="550dp"
-        android:background="#D9FFFFFF"
-        android:padding="10dp"
+        android:background="#00FFFFFF"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="5dp"
         app:layout_constraintBottom_toTopOf="@id/total_price_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/back_btn"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@id/checkout_text"
+        app:layout_constraintVertical_bias="0.405"
         tools:ignore="NotSibling" />
-
-    <!--      PATHS      -->
 
     <LinearLayout
         android:id="@+id/total_price_container"
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:background="#FFFFFF"
+        android:background="@drawable/gradient_bg_005"
         android:orientation="horizontal"
         android:padding="10dp"
         app:layout_constraintBottom_toTopOf="@id/navigation_bar"
@@ -107,6 +120,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:text="proceed to payment"
+            android:backgroundTint="#F4511E"
             android:layout_marginStart="30dp"
             tools:ignore="HardcodedText" />
     </LinearLayout>

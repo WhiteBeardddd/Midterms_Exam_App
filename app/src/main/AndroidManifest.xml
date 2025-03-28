@@ -13,34 +13,50 @@
         android:theme="@style/Theme.MidtermsExam_Beauty"
         tools:targetApi="31">
         <activity
-            android:name=".pages.SkinType"
+            android:name=".JSON_Parser"
+            android:exported="false">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
+        <activity
+            android:name=".SharedPref"
+            android:exported="false">
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+        </activity>
+        <activity
+            android:name=".display.SkinType"
             android:exported="false" />
         <activity
-            android:name=".pages.Category"
+            android:name=".display.ViewProductDetails"
             android:exported="false" />
         <activity
-            android:name=".pages.ViewProductDetails"
+            android:name=".display.FeaturedProducts"
             android:exported="false" />
         <activity
-            android:name=".pages.FeaturedProducts"
+            android:name=".display.PopularProducts"
             android:exported="false" />
         <activity
-            android:name=".pages.PopularProducts"
+            android:name=".display.Checkout"
             android:exported="false" />
         <activity
-            android:name=".pages.Checkout"
-            android:exported="false" />
-        <activity
-            android:name=".pages.Homepage"
+            android:name=".display.Homepage"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+             <intent-filter>
+             <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+
+             <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
         </activity>
     </application>
 

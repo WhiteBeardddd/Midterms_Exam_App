@@ -1,5 +1,6 @@
 package com.example.midtermsexam_beauty.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -13,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
-import com.example.midtermsexam_beauty.pages.ViewProductDetails;
+import com.example.midtermsexam_beauty.display.ViewProductDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class SkinTypeCard extends RecyclerView.Adapter<SkinTypeCard.ViewHolder> 
         return productList.size();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void updateList(List<Product> newList) {
         productList.clear();
         productList.addAll(newList);
@@ -67,14 +69,15 @@ public class SkinTypeCard extends RecyclerView.Adapter<SkinTypeCard.ViewHolder> 
             productSkinType = itemView.findViewById(R.id.productSkinType);
         }
 
+        @SuppressLint({"DefaultLocale", "SetTextI18n"})
         public void bind(Product product) {
             displayImage.setImageResource(product.getImageId());
             productName.setText(product.getName());
             productPrice.setText(String.format("₱%.2f", product.getPrice()));
             productDescription.setText(product.getDescription());
-            ratings.setText("Rating: " + product.getRating());
+            ratings.setText("Rating: " + product.getRating() + "⭐");
             productCategory.setText("Category: " + product.getCategory());
-            productSkinType.setText("Skintype: " + product.getSkin_type());
+            productSkinType.setText("Skin Type: " + product.getSkin_type());
 
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, ViewProductDetails.class);

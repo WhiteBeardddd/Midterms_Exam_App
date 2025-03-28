@@ -1,4 +1,4 @@
-package com.example.midtermsexam_beauty.pages;
+package com.example.midtermsexam_beauty.display;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,15 +18,12 @@ import com.example.midtermsexam_beauty.adapters.SkinTypeCard;
 import com.example.midtermsexam_beauty.models.Product;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class SkinType extends AppCompatActivity {
 
     private final ArrayList<Product> skinTypeList = new ArrayList<>();
-    private RecyclerView skinTypeListView;
-    private Spinner skinTypeSpinner;
     private SkinTypeCard SkinTypeAdapter;
 
     @Override
@@ -43,11 +40,11 @@ public class SkinType extends AppCompatActivity {
         ImageButton proceedToCheckout = findViewById(R.id.toPayment);
 
         // Initialize RecyclerView & Spinner
-        skinTypeListView = findViewById(R.id.skinTypeListView);
-        skinTypeSpinner = findViewById(R.id.skinTypeSpinner);
+        RecyclerView skinTypeListView = findViewById(R.id.skinTypeListView);
+        Spinner skinTypeSpinner = findViewById(R.id.skinTypeSpinner);
 
         // Dynamic skin types list (new types can be added)
-        String[] options = {"All", "Oily", "Dry", "Combination", "Normal", "Ranked", "Hot", "Secret", "Loved", "Ratings"};
+        String[] options = {"All", "Oily", "Dry", "Combination", "Normal", "Ranked", "Hot", "Secret", "Loved"};
 
         // Set up Spinner Adapter
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, options);
@@ -97,14 +94,14 @@ public class SkinType extends AppCompatActivity {
 
         if (selectedType.equals("ratings")) {
             // Sort products by rating from highest to lowest
-            Collections.sort(allProducts, Comparator.comparingDouble(Product::getRating).reversed());
+            allProducts.sort(Comparator.comparingDouble(Product::getRating).reversed());
             filteredList.addAll(allProducts);
         } else {
-            // Filter by skin type
+            // Filter by skin type && Category
             for (Product product : allProducts) {
                 if (selectedType.equals("all") || product.getSkin_type().toLowerCase().contains(selectedType)) {
                     filteredList.add(product);
-                } else if (selectedType.equals("all") || product.getCategory().toLowerCase().contains(selectedType)) {
+                } else if (product.getCategory().toLowerCase().contains(selectedType)) {
                     filteredList.add(product);
                 }
             }

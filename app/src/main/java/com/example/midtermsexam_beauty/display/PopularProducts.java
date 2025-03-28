@@ -1,19 +1,15 @@
-package com.example.midtermsexam_beauty.pages;
+package com.example.midtermsexam_beauty.display;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
-import com.example.midtermsexam_beauty.adapters.CheckOutCard;
-import com.example.midtermsexam_beauty.adapters.ProductCard;
+import com.example.midtermsexam_beauty.adapters.PopularAndFeaturedAdapter;
 import com.example.midtermsexam_beauty.models.Product;
 
 import java.util.ArrayList;
@@ -34,7 +30,7 @@ public class PopularProducts extends AppCompatActivity {
 
         ListView popularListView = findViewById(R.id.popular_recycler);
 
-        CheckOutCard popularAdapter = new CheckOutCard(this, popularProducts);
+        PopularAndFeaturedAdapter popularAdapter = new PopularAndFeaturedAdapter(this, popularProducts);
         popularListView.setAdapter(popularAdapter);
 
         toPrevious = findViewById(R.id.back_btn);
@@ -47,9 +43,7 @@ public class PopularProducts extends AppCompatActivity {
 
         // Navigation Buttons
 
-        toPrevious.setOnClickListener(view -> {
-            startActivity(new Intent(PopularProducts.this, Homepage.class));
-        });
+        toPrevious.setOnClickListener(view -> startActivity(new Intent(PopularProducts.this, Homepage.class)));
 
         proceedToHome.setOnClickListener(view -> {
             Intent intent = new Intent(PopularProducts.this, Homepage.class);

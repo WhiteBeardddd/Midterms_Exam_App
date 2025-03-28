@@ -1,0 +1,28 @@
+{
+  "users" : [
+    {
+      "id" : 1,
+      "name": "boy1",
+      "email" : "boy1@gmail.com",
+      "gender" : "Male"
+    },
+    {
+      "id" : 2,
+      "name": "boy2",
+      "email" : "boy2@gmail.com",
+      "gender" : "Male"
+    },
+    {
+      "id" : 3,
+      "name": "girl1",
+      "email" : "girl1@gmail.com",
+      "gender" : "Male"
+    },
+    {
+      "id" : 4,
+      "name": "girl2",
+      "email" : "girl2@gmail.com",
+      "gender" : "Male"
+    }
+  ]
+}

@@ -2,7 +2,6 @@ package com.example.midtermsexam_beauty.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
-import com.example.midtermsexam_beauty.pages.ViewProductDetails;
-import com.example.midtermsexam_beauty.util.ProductManager;
+import com.example.midtermsexam_beauty.utilities.ProductManager;
 
 import java.util.List;
 
 public class ProductCard extends RecyclerView.Adapter<ProductCard.ViewHolder> {
-
     private final Context context;
     private final List<Product> productList;
-    private OnItemClickListener listener; // Interface for click events
+    private final OnItemClickListener listener;
 
     public interface OnItemClickListener {
         void onItemClick(Product product);
@@ -56,11 +53,6 @@ public class ProductCard extends RecyclerView.Adapter<ProductCard.ViewHolder> {
         return productList.size();
     }
 
-    public void updateList(List<Product> newList) {
-        productList.clear();
-        productList.addAll(newList);
-        notifyDataSetChanged();
-    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView displayImage;
@@ -80,6 +72,7 @@ public class ProductCard extends RecyclerView.Adapter<ProductCard.ViewHolder> {
             subtractBtn = itemView.findViewById(R.id.subtract_btn);
             addToCartBtn = itemView.findViewById(R.id.add_to_cart);
         }
+        @SuppressLint({"DefaultLocale", "SetTextI18n"})
         public void bind (Product product, OnItemClickListener listener) {
             displayImage.setImageResource(product.getImageId());
             productName.setText(product.getName());

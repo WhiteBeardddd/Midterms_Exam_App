@@ -1,4 +1,4 @@
-package com.example.midtermsexam_beauty.util;
+package com.example.midtermsexam_beauty.utilities;
 
 import com.example.midtermsexam_beauty.models.Product;
 

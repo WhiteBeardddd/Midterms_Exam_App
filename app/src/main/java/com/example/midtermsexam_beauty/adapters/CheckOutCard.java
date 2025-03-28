@@ -15,12 +15,10 @@ import com.example.midtermsexam_beauty.models.Product;
 import java.util.List;
 
 public class CheckOutCard extends BaseAdapter {
-    private final Context context;
     private final List<Product> productList;
     private final LayoutInflater inflater;
 
     public CheckOutCard(Context context, List<Product> productList) {
-        this.context = context;
         this.productList = productList;
         this.inflater = LayoutInflater.from(context);
     }
@@ -40,7 +38,7 @@ public class CheckOutCard extends BaseAdapter {
         return position;
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint({"SetTextI18n", "DefaultLocale"})
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
@@ -56,8 +54,8 @@ public class CheckOutCard extends BaseAdapter {
         Product product = productList.get(position);
         holder.productImage.setImageResource(product.getImageId());
         holder.productName.setText(product.getName());
-        holder.productPrice.setText("₱" + product.getPrice());
-        holder.productQuantity.setText("Qty: " + product.getCounter());
+        holder.productPrice.setText(String.format("₱ %.2f", product.getPrice()));
+        holder.productQuantity.setText("Quantity: " + product.getCounter());
 
         return convertView;
     }

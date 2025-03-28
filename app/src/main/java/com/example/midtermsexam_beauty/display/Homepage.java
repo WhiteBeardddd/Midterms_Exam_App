@@ -1,4 +1,4 @@
-package com.example.midtermsexam_beauty.pages;
+package com.example.midtermsexam_beauty.display;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -16,7 +16,6 @@ import com.example.midtermsexam_beauty.adapters.ProductCard;
 import com.example.midtermsexam_beauty.models.Product;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Homepage extends AppCompatActivity {
 

@@ -5,7 +5,8 @@
     android:layout_width="160dp"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:background="@drawable/border_black">
+    android:background="@drawable/border_black"
+    tools:ignore="TextSizeCheck">
 
     <LinearLayout
         android:id="@+id/toViewItem"
@@ -20,6 +21,7 @@
             android:id="@+id/product_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:ellipsize="end"
             android:fontFamily="@font/lexend_medium"
             android:gravity="center"
@@ -81,14 +83,14 @@
             android:textSize="12sp"
             tools:ignore="HardcodedText" />
 
-        <!-- Skintype -->
+        <!-- Skin type -->
         <TextView
             android:id="@+id/productSkinType"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:fontFamily="@font/lexend_medium"
             android:paddingTop="4dp"
-            android:text="Skintype: All Types"
+            android:text="Skin Type: All Types"
             android:textColor="@color/black"
             android:textSize="12sp"
             tools:ignore="HardcodedText" />

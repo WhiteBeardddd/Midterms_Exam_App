@@ -1,4 +1,4 @@
-package com.example.midtermsexam_beauty.pages;
+package com.example.midtermsexam_beauty.display;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -11,9 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.CheckOutCard;
 import com.example.midtermsexam_beauty.models.Product;
-import com.example.midtermsexam_beauty.util.ProductManager;
+import com.example.midtermsexam_beauty.utilities.ProductManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Checkout extends AppCompatActivity {
@@ -47,9 +46,7 @@ public class Checkout extends AppCompatActivity {
 
         // Navigation Buttons
 
-        toPrevious.setOnClickListener(view -> {
-            startActivity(new Intent(Checkout.this, Homepage.class));
-        });
+        toPrevious.setOnClickListener(view -> startActivity(new Intent(Checkout.this, Homepage.class)));
 
         proceedToHome.setOnClickListener(view -> {
             Intent intent = new Intent(Checkout.this, Homepage.class);
