@@ -2,4 +2,12 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Forest Theme Colors -->
+    <color name="forest_green">#76D75A</color>
+    <color name="forest_green_dark">#5AB442</color>
+    <color name="forest_orange_accent">#FF9800</color>
+    <color name="forest_red">#FF0000</color>
+    <color name="forest_text_primary">#333333</color>
+    <color name="forest_text_secondary">#666666</color>
 </resources>

@@ -14,6 +14,12 @@
         tools:targetApi="31">
 
         <activity
+            android:name=".display.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".display.LoginActivity"
+            android:exported="false" />
+        <activity
             android:name=".SQLite_activity"
             android:exported="false">
 

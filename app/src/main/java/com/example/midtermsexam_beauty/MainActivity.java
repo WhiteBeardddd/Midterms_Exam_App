@@ -8,6 +8,8 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.midtermsexam_beauty.display.Homepage;
+import com.example.midtermsexam_beauty.display.LoginActivity;
+import com.example.midtermsexam_beauty.display.RegisterActivity;
 
 public class MainActivity extends AppCompatActivity {
     Button logInBtn;
@@ -25,15 +27,14 @@ public class MainActivity extends AppCompatActivity {
         signUpBtn = findViewById(R.id.signUpButton);
 
         logInBtn.setOnClickListener(v -> {
-            Intent toHome_Page= new Intent(MainActivity.this, Homepage.class);
-            startActivity(toHome_Page);
+            Intent toLogin = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(toLogin);
         });
 
         signUpBtn.setOnClickListener(v -> {
-            Intent toHome_Page= new Intent(MainActivity.this, Homepage.class);
-            startActivity(toHome_Page);
+            Intent toRegister = new Intent(MainActivity.this, RegisterActivity.class);
+            startActivity(toRegister);
         });
-
 
     }
 

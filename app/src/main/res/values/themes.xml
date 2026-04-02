@@ -2,7 +2,10 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.MidtermsExam_Beauty" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/forest_green</item>
+        <item name="colorSecondary">@color/forest_orange_accent</item>
+        <item name="colorTertiary">@color/forest_red</item>
+        <item name="android:statusBarColor">@color/forest_green_dark</item>
     </style>
 
     <style name="Theme.MidtermsExam_Beauty" parent="Base.Theme.MidtermsExam_Beauty" />
