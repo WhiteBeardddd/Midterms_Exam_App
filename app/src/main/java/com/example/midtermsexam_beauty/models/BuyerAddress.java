@@ -48,4 +48,15 @@ public class BuyerAddress {
     public double getLatitude() { return latitude; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+
+    // Setters
+    public void setId(String id) { this.id = id; }
+    public void setBuyerId(String buyerId) { this.buyerId = buyerId; }
+    public void setPostalCode(int postalCode) { this.postalCode = postalCode; }
+    public void setStreet(String street) { this.street = street; }
+    public void setBarangay(String barangay) { this.barangay = barangay; }
+    public void setCity(String city) { this.city = city; }
+    public void setCountry(String country) { this.country = country; }
+    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public void setLatitude(double latitude) { this.latitude = latitude; }
 }

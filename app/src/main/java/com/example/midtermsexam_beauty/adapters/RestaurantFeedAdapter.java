@@ -14,9 +14,11 @@ import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 
 import java.util.List;
-import java.util.Locale;
 
 public class RestaurantFeedAdapter extends RecyclerView.Adapter<RestaurantFeedAdapter.ViewHolder> {
+    private static final int[] ETA_MINUTES = {18, 22, 26, 30, 34, 28, 24, 32, 20, 36};
+    private static final int[] REVIEW_COUNTS = {61, 94, 120, 48, 88, 156, 73, 205, 132, 57};
+
     private final Context context;
     private final List<Product> productList;
     private final ProductCard.OnItemClickListener listener;
@@ -36,7 +38,7 @@ public class RestaurantFeedAdapter extends RecyclerView.Adapter<RestaurantFeedAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(productList.get(position), listener);
+        holder.bind(productList.get(position), position, listener);
     }
 
     @Override
@@ -47,28 +49,28 @@ public class RestaurantFeedAdapter extends RecyclerView.Adapter<RestaurantFeedAd
     static class ViewHolder extends RecyclerView.ViewHolder {
         private final ImageView productImage;
         private final TextView productName;
-        private final TextView productDescription;
+        private final TextView productRating;
+        private final TextView productMeta;
         private final TextView productCategory;
         private final TextView productAvailability;
-        private final TextView productPrice;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             productImage = itemView.findViewById(R.id.explore_product_image);
             productName = itemView.findViewById(R.id.explore_product_name);
-            productDescription = itemView.findViewById(R.id.explore_product_description);
+            productRating = itemView.findViewById(R.id.rating_text);
+            productMeta = itemView.findViewById(R.id.explore_product_meta);
             productCategory = itemView.findViewById(R.id.explore_product_category);
             productAvailability = itemView.findViewById(R.id.explore_product_availability);
-            productPrice = itemView.findViewById(R.id.explore_product_price);
         }
 
-        void bind(Product product, ProductCard.OnItemClickListener listener) {
+        void bind(Product product, int position, ProductCard.OnItemClickListener listener) {
             productImage.setImageResource(product.getImageID());
             productName.setText(product.getName());
-            productDescription.setText(product.getDescription());
+            productRating.setText(ShopCardFormatter.buildRatingLabel(product.getRating(), position, REVIEW_COUNTS));
+            productMeta.setText(ShopCardFormatter.buildMetaLabel(product.getCategory(), position, ETA_MINUTES));
             productCategory.setText(product.getCategory());
-            productAvailability.setText(product.getAvalability() ? "Available" : "Sold out");
-            productPrice.setText(String.format(Locale.US, "P%.2f", product.getPrice()));
+            productAvailability.setText(product.getAvalability() ? "Open now" : "Currently unavailable");
 
             itemView.setOnClickListener(v -> {
                 if (listener != null) {

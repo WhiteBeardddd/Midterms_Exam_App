@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.midtermsexam_beauty.R;
+import com.example.midtermsexam_beauty.models.Profile;
 import com.example.midtermsexam_beauty.utilities.AppNavigator;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
@@ -62,13 +63,21 @@ public class LoginActivity extends AppCompatActivity {
                     if (result.success) {
                         sessionManager.saveSession(result.accessToken, result.userId);
 
-                        boolean seller = authService.isSeller(result.accessToken, result.userId);
+                        // --- UPDATED: Fetch full profile to get the Profile ID for the ERD ---
+                        Profile profile = authService.getProfile(result.accessToken, result.userId);
+                        boolean seller = false;
+                        if (profile != null) {
+                            sessionManager.setProfileId(profile.getId());
+                            seller = profile.isSeller();
+                        }
                         sessionManager.setIsSeller(seller);
+                        // ---------------------------------------------------------------------
 
+                        boolean finalSeller = seller;
                         runOnUiThread(() -> {
                             btnLoginSubmit.setEnabled(true);
                             Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
-                            AppNavigator.openAuthenticatedHome(LoginActivity.this, seller, true);
+                            AppNavigator.openAuthenticatedHome(LoginActivity.this, finalSeller, true);
                         });
                     } else {
                         runOnUiThread(() -> {

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_dark_bg">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_cart_bar"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="250dp">
+
+                <ImageView
+                    android:id="@+id/item_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/product_1" />
+
+                <!-- Close Button -->
+                <ImageButton
+                    android:id="@+id/btn_close"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/shop_header_icon_button_bg"
+                    android:src="@drawable/cancel_icon"
+                    android:padding="10dp"/>
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:id="@+id/item_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/lexend_bold"
+                    android:text="Item Name"
+                    android:textColor="@color/white"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/item_price"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/lexend_semibold"
+                    android:text="₱0.00"
+                    android:textColor="@color/color_primary"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/item_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/lexend_regular"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Item description goes here."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Fixed Bottom Bar -->
+    <LinearLayout
+        android:id="@+id/bottom_cart_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/surface_elevated"
+        android:elevation="16dp"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Quantity Selector -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/surface_card"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btn_minus"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_rew"
+                android:tint="@color/text_primary" />
+
+            <TextView
+                android:id="@+id/tv_quantity"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/lexend_bold"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/white"
+                android:textSize="20sp" />
+
+            <ImageButton
+                android:id="@+id/btn_plus"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_media_ff"
+                android:tint="@color/color_primary" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_add_to_cart"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:background="@drawable/cta_primary"
+            android:fontFamily="@font/lexend_bold"
+            android:text="Add to Cart - ₱0.00"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+</RelativeLayout>

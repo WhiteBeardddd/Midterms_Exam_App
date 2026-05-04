@@ -2,16 +2,11 @@ package com.example.midtermsexam_beauty.views.user;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.TypedValue;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
@@ -25,20 +20,13 @@ import java.util.List;
 
 public class Homepage extends AppCompatActivity {
 
-    private RecyclerView popularListView;
-    private LinearLayout explorePaginationIndicator;
-    private PagerSnapHelper exploreSnapHelper;
-    private LinearLayoutManager exploreLayoutManager;
-    private final List<ImageView> exploreDots = new ArrayList<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
 
         RecyclerView featuredListView = findViewById(R.id.featured_recycler);
-        popularListView = findViewById(R.id.popular_recycler);
-        explorePaginationIndicator = findViewById(R.id.explore_pagination_indicator);
+        RecyclerView popularListView = findViewById(R.id.popular_recycler);
         EditText searchEditText = findViewById(R.id.searchEditText);
 
         NavbarCard.setupNavbar(this);
@@ -67,13 +55,10 @@ public class Homepage extends AppCompatActivity {
         featuredListView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
-        exploreLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        popularListView.setLayoutManager(exploreLayoutManager);
+        popularListView.setLayoutManager(new LinearLayoutManager(this));
 
         featuredListView.setAdapter(featuredAdapter);
         popularListView.setAdapter(popularAdapter);
-
-        setupExplorePagination(popularProducts.size());
 
         searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
@@ -81,78 +66,6 @@ public class Homepage extends AppCompatActivity {
                 v.clearFocus();
             }
         });
-    }
-
-    private void setupExplorePagination(int itemCount) {
-        if (exploreSnapHelper == null) {
-            exploreSnapHelper = new PagerSnapHelper();
-            exploreSnapHelper.attachToRecyclerView(popularListView);
-        }
-
-        buildExploreDots(itemCount);
-        updateExploreDots(0);
-
-        popularListView.clearOnScrollListeners();
-        popularListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                updateExploreIndicatorFromSnap();
-            }
-        });
-
-        popularListView.post(this::updateExploreIndicatorFromSnap);
-    }
-
-    private void buildExploreDots(int itemCount) {
-        exploreDots.clear();
-        explorePaginationIndicator.removeAllViews();
-
-        for (int i = 0; i < itemCount; i++) {
-            ImageView dot = new ImageView(this);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(dpToPx(8), dpToPx(8));
-            if (i > 0) {
-                params.setMarginStart(dpToPx(8));
-            }
-            dot.setLayoutParams(params);
-            dot.setImageResource(R.drawable.indicator_dot_inactive);
-            explorePaginationIndicator.addView(dot);
-            exploreDots.add(dot);
-        }
-    }
-
-    private void updateExploreIndicatorFromSnap() {
-        if (exploreSnapHelper == null || exploreLayoutManager == null) {
-            return;
-        }
-
-        android.view.View snappedView = exploreSnapHelper.findSnapView(exploreLayoutManager);
-        if (snappedView == null) {
-            return;
-        }
-
-        int position = exploreLayoutManager.getPosition(snappedView);
-        if (position != RecyclerView.NO_POSITION) {
-            updateExploreDots(position);
-        }
-    }
-
-    private void updateExploreDots(int activePosition) {
-        for (int i = 0; i < exploreDots.size(); i++) {
-            exploreDots.get(i).setImageResource(
-                    i == activePosition
-                            ? R.drawable.indicator_dot_active
-                            : R.drawable.indicator_dot_inactive
-            );
-        }
-    }
-
-    private int dpToPx(int dp) {
-        return (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dp,
-                getResources().getDisplayMetrics()
-        );
     }
 
     private List<Product> getStaticFeaturedShops() {

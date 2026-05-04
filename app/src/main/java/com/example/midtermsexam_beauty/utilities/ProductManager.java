@@ -8,10 +8,11 @@ import java.util.Map;
 public class ProductManager {
     private static ProductManager productInstance;
 
-    private final Map<Product, Integer> productList;
+    // Renamed to cartItems to better reflect its purpose in a FoodPanda-style app
+    private final Map<Product, Integer> cartItems;
 
     private ProductManager() {
-        productList = new HashMap<>();
+        cartItems = new HashMap<>();
     }
 
     public static synchronized ProductManager getInstance() {
@@ -22,20 +23,22 @@ public class ProductManager {
     }
 
     public void addProduct(Product product, int quantity) {
-        int currentQty = productList.getOrDefault(product, 0);
-        productList.put(product, currentQty + quantity);
+        // Using getOrDefault ensures we don't hit a NullPointerException
+        int currentQty = cartItems.getOrDefault(product, 0);
+        cartItems.put(product, currentQty + quantity);
     }
-
 
     public void removeProduct(Product product) {
-        productList.remove(product);
+        cartItems.remove(product);
     }
 
-    public Map<Product, Integer> getProduct(){
-        return productList;
+    // FIXED: Renamed from getProduct() to getCartItems()
+    // to match the call in Checkout.java
+    public Map<Product, Integer> getCartItems() {
+        return cartItems;
     }
 
-    public void clearProductList() {
-        productList.clear();
+    public void clearCart() {
+        cartItems.clear();
     }
 }

@@ -2,7 +2,7 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="190dp"
+    android:layout_width="270dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="12dp"
     app:cardBackgroundColor="@color/surface_elevated"
@@ -15,67 +15,111 @@
         android:orientation="vertical"
         android:padding="14dp">
 
-        <ImageView
-            android:id="@+id/product_image"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="118dp"
-            android:adjustViewBounds="true"
-            android:background="@drawable/surface_card_soft"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/product_1"
-            tools:ignore="ContentDescription" />
+            android:layout_height="150dp">
 
-        <TextView
-            android:id="@+id/product_name"
+            <ImageView
+                android:id="@+id/product_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:background="@drawable/surface_card_soft"
+                android:scaleType="centerCrop"
+                android:src="@drawable/product_1"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="10dp"
+                android:background="@drawable/icon_button_bg"
+                android:padding="8dp"
+                android:src="@drawable/heart_icon"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:fontFamily="@font/lexend_bold"
-            android:maxLines="2"
-            android:text="Classic Cheeseburger"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:gravity="top"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/product_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/lexend_bold"
+                android:maxLines="2"
+                android:text="Minute Burger"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                tools:ignore="HardcodedText" />
+
+            <include
+                android:id="@+id/product_rating_badge"
+                layout="@layout/layout_rating_badge" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/product_meta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="7dp"
+            android:fontFamily="@font/lexend_regular"
+            android:text="From 22 min - Fast Food"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
             tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/product_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/lexend_regular"
             android:maxLines="2"
-            android:text="A featured restaurant favorite with a clean, fast layout."
+            android:text="Quick burgers and budget-friendly bites that are easy to grab anytime."
             android:textColor="@color/text_secondary"
             android:textSize="12sp"
             tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/product_category"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/pill_green"
-            android:fontFamily="@font/lexend_semibold"
-            android:paddingStart="10dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="6dp"
-            android:text="Burgers"
-            android:textColor="@color/text_primary"
-            android:textSize="11sp"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/product_price"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/lexend_black"
-            android:text="P199.00"
-            android:textColor="@color/color_primary"
-            android:textSize="18sp"
-            tools:ignore="HardcodedText" />
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/product_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/surface_card_soft"
+                android:fontFamily="@font/lexend_semibold"
+                android:paddingStart="10dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="6dp"
+                android:text="Fast Food"
+                android:textColor="@color/text_primary"
+                android:textSize="11sp"
+                tools:ignore="HardcodedText" />
+
+            <TextView
+                android:id="@+id/product_price"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/lexend_regular"
+                android:text="Open now"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                tools:ignore="HardcodedText" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

@@ -6,7 +6,8 @@ import android.content.SharedPreferences;
 public class SessionManager {
     private static final String PREF_NAME = "TaraBytesSession";
     private static final String KEY_TOKEN = "access_token";
-    private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USER_ID = "user_id"; // This is the Auth ID
+    private static final String KEY_PROFILE_ID = "profile_id"; // NEW: This is the Profile table ID
     private static final String KEY_IS_SELLER = "is_seller";
     private static final String KEY_SELLER_ID = "seller_id";
 
@@ -22,6 +23,16 @@ public class SessionManager {
                 .putString(KEY_USER_ID, userId)
                 .apply();
     }
+
+    // --- NEW PROFILE ID METHODS ---
+    public void setProfileId(String profileId) {
+        prefs.edit().putString(KEY_PROFILE_ID, profileId).apply();
+    }
+
+    public String getProfileId() {
+        return prefs.getString(KEY_PROFILE_ID, null);
+    }
+    // ------------------------------
 
     public void setSellerId(String sellerId) {
         prefs.edit().putString(KEY_SELLER_ID, sellerId).apply();

@@ -1,148 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_dark_bg"
-    tools:context=".views.user.ViewProductDetails">
+    android:background="@color/color_dark_bg">
 
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            app:contentScrim="@color/surface_elevated"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            app:titleEnabled="false">
+
+            <!-- Hero Cover Image -->
+            <ImageView
+                android:id="@+id/shop_cover_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/product_1"
+                app:layout_collapseMode="parallax" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="@drawable/gradient_top_shadow"
+                app:layout_collapseMode="parallax" />
+
+            <!-- Sticky Toolbar -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingEnd="16dp">
+
+                    <ImageButton
+                        android:id="@+id/back_btn"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/shop_header_icon_button_bg"
+                        android:padding="8dp"
+                        android:src="@drawable/back_icon"
+                        app:tint="@color/black_primary" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/favorite_btn"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/shop_header_icon_button_bg"
+                        android:padding="8dp"
+                        android:src="@drawable/heart_icon"
+                        app:tint="@color/black_primary" />
+
+                    <ImageButton
+                        android:id="@+id/share_btn"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/shop_header_icon_button_bg"
+                        android:padding="8dp"
+                        app:srcCompat="@android:drawable/ic_menu_share"
+                        app:tint="@color/black_primary" />
+                </LinearLayout>
+            </androidx.appcompat.widget.Toolbar>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:background="@drawable/shop_content_surface_dark"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/surface_elevated"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingTop="16dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="16dp">
+            android:orientation="vertical"
+            android:paddingBottom="100dp">
 
-            <ImageButton
-                android:id="@+id/back_btn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@drawable/back_icon"
-                android:backgroundTint="@color/color_accent_orange"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:layout_weight="1"
-                android:fontFamily="@font/lexend_black"
-                android:text="Meal Details"
-                android:textColor="@color/text_primary"
-                android:textSize="22sp"
-                tools:ignore="HardcodedText" />
-        </LinearLayout>
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true">
-
+            <!-- Shop Info Section -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
-
-                <ImageView
-                    android:id="@+id/product_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="220dp"
-                    android:adjustViewBounds="true"
-                    android:background="@drawable/surface_card"
-                    android:padding="10dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/product_1"
-                    tools:ignore="ContentDescription" />
+                android:padding="20dp">
 
                 <TextView
-                    android:id="@+id/product_name"
-                    android:layout_width="match_parent"
+                    android:id="@+id/shop_title"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     android:fontFamily="@font/lexend_black"
-                    android:text="Classic Cheeseburger"
+                    android:text="Minute Burger"
                     android:textColor="@color/text_primary"
-                    android:textSize="24sp"
-                    tools:ignore="HardcodedText" />
-
-                <TextView
-                    android:id="@+id/product_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:fontFamily="@font/lexend_regular"
-                    android:lineSpacingExtra="2dp"
-                    android:text="Detailed restaurant or meal description goes here."
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
+                    android:textSize="26sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/product_category"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/surface_card_soft"
-                        android:fontFamily="@font/lexend_semibold"
-                        android:paddingStart="12dp"
-                        android:paddingTop="8dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="8dp"
-                        android:text="Burgers"
-                        android:textColor="@color/text_primary"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
+                    <include layout="@layout/layout_rating_badge" />
 
                     <TextView
-                        android:id="@+id/product_availability"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:background="@drawable/pill_green"
-                        android:fontFamily="@font/lexend_semibold"
-                        android:paddingStart="12dp"
-                        android:paddingTop="8dp"
-                        android:paddingEnd="12dp"
-                        android:paddingBottom="8dp"
-                        android:text="Available now"
-                        android:textColor="@color/text_primary"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
+                        android:layout_marginStart="12dp"
+                        android:fontFamily="@font/lexend_regular"
+                        android:text="4000+ ratings"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/product_price"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="@font/lexend_medium"
+                    android:text="₱ 49.00 Delivery Fee • 25 mins"
+                    android:textColor="@color/color_primary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:background="#12FFFFFF" />
+
+            <!-- Menu Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/lexend_bold"
+                    android:text="Popular"
+                    android:textColor="@color/text_primary"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/shop_section_note"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:fontFamily="@font/lexend_black"
-                    android:text="P199.00"
-                    android:textColor="@color/color_primary"
-                    android:textSize="28sp"
-                    tools:ignore="HardcodedText" />
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/lexend_regular"
+                    android:text="Most ordered right now."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
+
+                <!-- Dynamic Menu Container -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_shop_menu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:nestedScrollingEnabled="false" />
             </LinearLayout>
-        </ScrollView>
 
-        <include
-            android:id="@+id/navigation_bar"
-            layout="@layout/layout_navbar" />
-    </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Floating Logo Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:layout_anchor="@id/app_bar"
+        app:layout_anchorGravity="bottom|start"
+        android:layout_marginStart="20dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/hero_gradient"
+            android:padding="8dp">
+
+            <ImageView
+                android:id="@+id/shop_logo_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/shop_logo_initials"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/lexend_black"
+                android:gravity="center"
+                android:text="MB"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <include
+        android:id="@+id/navigation_bar"
+        layout="@layout/layout_navbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

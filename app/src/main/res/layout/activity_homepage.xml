@@ -271,7 +271,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:fontFamily="@font/lexend_regular"
-                        android:text="Swipe card by card to browse what stands out nearby."
+                        android:text="Scroll down through nearby restaurants and compare them quickly."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp"
                         tools:ignore="HardcodedText" />
@@ -279,19 +279,9 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/popular_recycler"
                         android:layout_width="match_parent"
-                        android:layout_height="360dp"
-                        android:layout_marginTop="14dp"
-                        android:clipToPadding="false"
-                        android:nestedScrollingEnabled="false" />
-
-                    <LinearLayout
-                        android:id="@+id/explore_pagination_indicator"
-                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center"
-                        android:orientation="horizontal" />
+                        android:layout_marginTop="14dp"
+                        android:nestedScrollingEnabled="false" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_dark_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_elevated"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageButton
+                android:id="@+id/back_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/back_icon"
+                android:backgroundTint="@color/color_accent_orange"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/lexend_black"
+                android:text="Delivery Address"
+                android:textColor="@color/text_primary"
+                android:textSize="22sp"
+                tools:ignore="HardcodedText" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="60dp"
+            android:layout_height="3dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="10dp"
+            android:background="#FF5722" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/surface_card"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:text="Street Address"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/etStreet"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/input_surface"
+                        android:hint="House No., Street Name"
+                        android:padding="14dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:text="Barangay"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/etBarangay"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/input_surface"
+                        android:hint="Barangay"
+                        android:padding="14dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/lexend_semibold"
+                        android:text="City"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/etCity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/input_surface"
+                        android:hint="City / Municipality"
+                        android:padding="14dp"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        tools:ignore="HardcodedText" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="6dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/lexend_semibold"
+                                android:text="Postal Code"
+                                android:textColor="@color/white"
+                                android:textSize="13sp"
+                                tools:ignore="HardcodedText" />
+
+                            <EditText
+                                android:id="@+id/etPostalCode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:background="@drawable/input_surface"
+                                android:inputType="number"
+                                android:hint="e.g. 6000"
+                                android:padding="14dp"
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_muted"
+                                tools:ignore="HardcodedText" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="6dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/lexend_semibold"
+                                android:text="Country"
+                                android:textColor="@color/white"
+                                android:textSize="13sp"
+                                tools:ignore="HardcodedText" />
+
+                            <EditText
+                                android:id="@+id/etCountry"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:background="@drawable/input_surface"
+                                android:text="Philippines"
+                                android:padding="14dp"
+                                android:textColor="@color/text_primary"
+                                android:textColorHint="@color/text_muted"
+                                tools:ignore="HardcodedText" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnSaveAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/cta_primary"
+                    android:fontFamily="@font/lexend_bold"
+                    android:text="Save Address"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    tools:ignore="ButtonStyle,HardcodedText" />
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

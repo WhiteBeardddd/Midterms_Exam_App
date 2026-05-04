@@ -15,37 +15,62 @@
         android:orientation="vertical"
         android:padding="14dp">
 
-        <ImageView
-            android:id="@+id/explore_product_image"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="190dp"
-            android:adjustViewBounds="true"
-            android:background="@drawable/surface_card_soft"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/popular_product_1"
-            tools:ignore="ContentDescription" />
+            android:layout_height="210dp">
 
-        <TextView
-            android:id="@+id/explore_product_name"
+            <ImageView
+                android:id="@+id/explore_product_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:adjustViewBounds="true"
+                android:background="@drawable/surface_card_soft"
+                android:scaleType="centerCrop"
+                android:src="@drawable/popular_product_1"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="top|end"
+                android:layout_margin="12dp"
+                android:background="@drawable/icon_button_bg"
+                android:padding="9dp"
+                android:src="@drawable/heart_icon"
+                tools:ignore="ContentDescription" />
+        </FrameLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:fontFamily="@font/lexend_black"
-            android:maxLines="2"
-            android:text="Streetfood Ta Bai"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
-            tools:ignore="HardcodedText" />
+            android:gravity="top"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/explore_product_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/lexend_black"
+                android:maxLines="2"
+                android:text="Daily Lemon - Fuente Osmena Circle"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                tools:ignore="HardcodedText" />
+
+            <include
+                android:id="@+id/explore_rating_badge"
+                layout="@layout/layout_rating_badge" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/explore_product_description"
+            android:id="@+id/explore_product_meta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/lexend_regular"
-            android:maxLines="2"
-            android:text="Strong seller with comfort food and approachable prices."
+            android:text="From 35 min &#8226; Fruit Shake"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
             tools:ignore="HardcodedText" />
@@ -67,7 +92,7 @@
                 android:paddingTop="8dp"
                 android:paddingEnd="12dp"
                 android:paddingBottom="8dp"
-                android:text="Burgers"
+                android:text="Fruit Shake"
                 android:textColor="@color/text_primary"
                 android:textSize="11sp"
                 tools:ignore="HardcodedText" />
@@ -77,28 +102,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:background="@drawable/pill_green"
-                android:fontFamily="@font/lexend_semibold"
-                android:paddingStart="12dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="12dp"
-                android:paddingBottom="8dp"
-                android:text="Available"
-                android:textColor="@color/text_primary"
-                android:textSize="11sp"
-                tools:ignore="HardcodedText" />
-
-            <TextView
-                android:id="@+id/explore_product_price"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1"
-                android:fontFamily="@font/lexend_black"
-                android:gravity="end"
-                android:text="P199.00"
-                android:textColor="@color/color_primary"
-                android:textSize="20sp"
+                android:fontFamily="@font/lexend_regular"
+                android:text="Open now"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
                 tools:ignore="HardcodedText" />
         </LinearLayout>
     </LinearLayout>

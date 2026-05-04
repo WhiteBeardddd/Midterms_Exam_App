@@ -33,7 +33,11 @@
         <activity android:name=".views.user.UserProfile" android:exported="false" />
         <activity android:name=".views.user.LoginActivity" android:exported="false" />
         <activity android:name=".views.user.RegisterActivity" android:exported="false" />
-
+        <activity android:name=".views.user.AddressActivity" android:exported="false" />
+        <!-- NEWLY ADDED ACTIVITIES -->
+        <activity android:name=".views.user.SettingsActivity" android:exported="false" />
+        <activity android:name=".views.user.ViewShopActivity" android:exported="false" />
+        <activity android:name=".views.user.MenuItemDetailsActivity" />
         <!-- Seller Activities -->
         <activity android:name=".views.seller.SellerDashboard" android:exported="false" />
         <activity android:name=".views.seller.SellerMenu" android:exported="false" />

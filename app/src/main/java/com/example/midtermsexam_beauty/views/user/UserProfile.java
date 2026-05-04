@@ -62,9 +62,11 @@ public class UserProfile extends AppCompatActivity {
 
         loadProfile();
 
-        settingBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Going to settings", Toast.LENGTH_SHORT).show()
-        );
+        // Opens the Settings Activity
+        settingBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
+        });
 
         orderBtn.setOnClickListener(v ->
                 Toast.makeText(this, "Order Lists", Toast.LENGTH_SHORT).show()
@@ -74,9 +76,11 @@ public class UserProfile extends AppCompatActivity {
                 Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show()
         );
 
-        addressBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Set the Location", Toast.LENGTH_SHORT).show()
-        );
+        // UPDATED: Now opens the Address Activity
+        addressBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AddressActivity.class);
+            startActivity(intent);
+        });
 
         btnSave.setOnClickListener(v -> saveProfile());
         btnLogout.setOnClickListener(v -> AppNavigator.logout(this, session));
