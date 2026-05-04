@@ -57,9 +57,9 @@ public class SupabaseAuthService {
                     .put("password", password)
                     .put("data", new JSONObject().put("username", username));
             HttpResponse res = post("/auth/v1/signup", payload.toString(), null);
-            return res.statusCode >= 200 && res.statusCode < 300 
-                ? new AuthResult(true, "Check your email.", null, null)
-                : new AuthResult(false, extractErrorMessage(res.body), null, null);
+            return res.statusCode >= 200 && res.statusCode < 300
+                    ? new AuthResult(true, "Check your email.", null, null)
+                    : new AuthResult(false, extractErrorMessage(res.body), null, null);
         } catch (Exception e) { return new AuthResult(false, e.getMessage(), null, null); }
     }
 
@@ -69,8 +69,8 @@ public class SupabaseAuthService {
             HttpResponse res = post("/auth/v1/token?grant_type=password", payload.toString(), null);
             if (res.statusCode >= 200 && res.statusCode < 300) {
                 JSONObject json = new JSONObject(res.body);
-                return new AuthResult(true, "Login success.", json.optString("access_token"), 
-                    json.has("user") ? json.getJSONObject("user").getString("id") : null);
+                return new AuthResult(true, "Login success.", json.optString("access_token"),
+                        json.has("user") ? json.getJSONObject("user").getString("id") : null);
             }
             return new AuthResult(false, extractErrorMessage(res.body), null, null);
         } catch (Exception e) { return new AuthResult(false, e.getMessage(), null, null); }
@@ -100,6 +100,7 @@ public class SupabaseAuthService {
                     return p;
                 }
             }
+            Log.e(TAG, "getProfile failed: " + code + " " + body);
         } catch (Exception e) { Log.e(TAG, "getProfile error", e); }
         return null;
     }
@@ -120,52 +121,23 @@ public class SupabaseAuthService {
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Prefer", "resolution=merge-duplicates,return=representation");
+            conn.setRequestProperty("Prefer", "resolution=merge-duplicates,return=minimal");
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
 
             int code = conn.getResponseCode();
-            String resBody = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
+            Log.d(TAG, "updateProfile: " + code + " " + body);
             return code >= 200 && code < 300;
         } catch (Exception e) { Log.e(TAG, "updateProfile error", e); return false; }
     }
 
-
-    public String uploadImage(String token, String bucket, String path, byte[] data, String mimeType) {
-        try {
-            URL url = new URL(getBaseUrl() + "/storage/v1/object/" + bucket + "/" + path);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
-            conn.setRequestProperty("Authorization", "Bearer " + token);
-            conn.setRequestProperty("Content-Type", mimeType);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(data);
-            }
-
-            int code = conn.getResponseCode();
-            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
-            conn.disconnect();
-
-            if (code >= 200 && code < 300) {
-                // Return the public URL if it's menu-items (which we know is public from SQL)
-                if (bucket.equals("menu-items")) {
-                    return getBaseUrl() + "/storage/v1/object/public/" + bucket + "/" + path;
-                }
-                return path; // For private, return the path
-            }
-            Log.e(TAG, "Upload failed: " + code + " " + body);
-        } catch (Exception e) { Log.e(TAG, "uploadImage error", e); }
-        return null;
-    }
-
     public String getSellerIdByAuthId(String token, String authId) {
         try {
+            Log.d(TAG, "getSellerIdByAuthId authId: " + authId);
             URL url = new URL(getBaseUrl() + "/rest/v1/profile?auth_id=eq." + authId + "&select=id");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -175,79 +147,40 @@ public class SupabaseAuthService {
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
 
+            Log.d(TAG, "profile query: " + code + " " + body);
+
             if (code >= 200 && code < 300) {
                 JSONArray arr = new JSONArray(body);
-                if (arr.length() > 0) {
-                    String profileId = arr.getJSONObject(0).getString("id");
-                    
-                    URL sUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
-                    HttpURLConnection sConn = (HttpURLConnection) sUrl.openConnection();
-                    sConn.setRequestMethod("GET");
-                    sConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
-                    sConn.setRequestProperty("Authorization", "Bearer " + token);
-                    int sCode = sConn.getResponseCode();
-                    String sBody = readStream(sCode < 300 ? sConn.getInputStream() : sConn.getErrorStream());
-                    sConn.disconnect();
+                if (arr.length() == 0) {
+                    Log.e(TAG, "No profile found for authId: " + authId);
+                    return null;
+                }
+                String profileId = arr.getJSONObject(0).getString("id");
+                Log.d(TAG, "profileId: " + profileId);
 
-                    if (sCode >= 200 && sCode < 300) {
-                        JSONArray sArr = new JSONArray(sBody);
-                        if (sArr.length() > 0) {
-                            return sArr.getJSONObject(0).getString("id");
-                        }
+                URL sUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
+                HttpURLConnection sConn = (HttpURLConnection) sUrl.openConnection();
+                sConn.setRequestMethod("GET");
+                sConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+                sConn.setRequestProperty("Authorization", "Bearer " + token);
+                int sCode = sConn.getResponseCode();
+                String sBody = readStream(sCode < 300 ? sConn.getInputStream() : sConn.getErrorStream());
+                sConn.disconnect();
+
+                Log.d(TAG, "seller_profiles query: " + sCode + " " + sBody);
+
+                if (sCode >= 200 && sCode < 300) {
+                    JSONArray sArr = new JSONArray(sBody);
+                    if (sArr.length() == 0) {
+                        Log.e(TAG, "No seller_profile for profileId: " + profileId);
+                        return null;
                     }
+                    return sArr.getJSONObject(0).getString("id");
                 }
             }
         } catch (Exception e) { Log.e(TAG, "getSellerIdByAuthId error", e); }
         return null;
     }
-
-    public SellerStats getStats(String token, String sellerId) {
-        SellerStats stats = new SellerStats();
-        if (sellerId == null) return stats;
-        try {
-            URL oUrl = new URL(getBaseUrl() + "/rest/v1/orders?seller_id=eq." + sellerId + "&select=total_amount,status");
-            HttpURLConnection oConn = (HttpURLConnection) oUrl.openConnection();
-            oConn.setRequestMethod("GET");
-            oConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
-            oConn.setRequestProperty("Authorization", "Bearer " + token);
-            int oCode = oConn.getResponseCode();
-            String oBody = readStream(oCode < 300 ? oConn.getInputStream() : oConn.getErrorStream());
-            oConn.disconnect();
-
-            if (oCode >= 200 && oCode < 300) {
-                JSONArray orders = new JSONArray(oBody);
-                for (int i = 0; i < orders.length(); i++) {
-                    JSONObject order = orders.getJSONObject(i);
-                    String status = order.optString("status", "");
-                    double amount = order.optDouble("total_amount", 0);
-
-                    if (status.equals("delivered")) {
-                        stats.totalSales += amount;
-                        stats.completedOrders++;
-                    } else if (!status.equals("cancelled")) {
-                        stats.pendingOrders++;
-                    }
-                }
-            }
-
-            URL mUrl = new URL(getBaseUrl() + "/rest/v1/menu_items?seller_id=eq." + sellerId + "&select=id");
-            HttpURLConnection mConn = (HttpURLConnection) mUrl.openConnection();
-            mConn.setRequestMethod("GET");
-            mConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
-            mConn.setRequestProperty("Authorization", "Bearer " + token);
-            int mCode = mConn.getResponseCode();
-            String mBody = readStream(mCode < 300 ? mConn.getInputStream() : mConn.getErrorStream());
-            mConn.disconnect();
-
-            if (mCode >= 200 && mCode < 300) {
-                stats.totalItems = new JSONArray(mBody).length();
-            }
-
-        } catch (Exception e) { Log.e(TAG, "getStats error", e); }
-        return stats;
-    }
-
-    // --- MENU ITEMS CRUD ---
 
     public List<MenuItem> getMenuItems(String token, String sellerId) {
         List<MenuItem> items = new ArrayList<>();
@@ -262,6 +195,8 @@ public class SupabaseAuthService {
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
 
+            Log.d(TAG, "getMenuItems: " + code + " items raw: " + body);
+
             if (code >= 200 && code < 300) {
                 JSONArray arr = new JSONArray(body);
                 for (int i = 0; i < arr.length(); i++) {
@@ -271,7 +206,7 @@ public class SupabaseAuthService {
                     item.setSellerId(obj.getString("seller_id"));
                     item.setName(obj.getString("name"));
                     item.setDescription(obj.optString("description", ""));
-                    item.setPrice(obj.getDouble("price"));
+                    item.setPrice(obj.optDouble("price", 0));
                     item.setCategory(obj.optString("category", ""));
                     item.setAvailable(obj.optBoolean("is_available", true));
                     item.setImageUrl(obj.optString("image_url", ""));
@@ -282,49 +217,77 @@ public class SupabaseAuthService {
         return items;
     }
 
-    public boolean addMenuItem(String token, MenuItem item) {
+    public String addMenuItem(String token, MenuItem item) {
         try {
             JSONObject payload = new JSONObject()
                     .put("seller_id", item.getSellerId())
                     .put("name", item.getName())
-                    .put("description", item.getDescription())
+                    .put("description", item.getDescription() != null ? item.getDescription() : "")
                     .put("price", item.getPrice())
-                    .put("category", item.getCategory())
+                    .put("category", item.getCategory() != null ? item.getCategory() : "")
                     .put("is_available", item.isAvailable())
-                    .put("image_url", item.getImageUrl());
+                    .put("image_url", item.getImageUrl() != null ? item.getImageUrl() : "");
 
-            HttpResponse res = post("/rest/v1/menu_items", payload.toString(), token);
-            return res.statusCode >= 200 && res.statusCode < 300;
-        } catch (Exception e) { Log.e(TAG, "addMenuItem error", e); return false; }
-    }
-
-    public boolean updateMenuItem(String token, MenuItem item) {
-        try {
-            JSONObject payload = new JSONObject()
-                    .put("name", item.getName())
-                    .put("description", item.getDescription())
-                    .put("price", item.getPrice())
-                    .put("category", item.getCategory())
-                    .put("is_available", item.isAvailable())
-                    .put("image_url", item.getImageUrl());
-
-            URL url = new URL(getBaseUrl() + "/rest/v1/menu_items?id=eq." + item.getId());
+            URL url = new URL(getBaseUrl() + "/rest/v1/menu_items");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("X-HTTP-Method-Override", "PATCH");
             conn.setDoOutput(true);
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Prefer", "return=representation"); // return the created row
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
 
             int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-            return code >= 200 && code < 300;
+            Log.d(TAG, "addMenuItem response: " + code + " " + body);
+
+            if (code >= 200 && code < 300) {
+                // Parse and return the new row's id
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) {
+                    return arr.getJSONObject(0).getString("id");
+                }
+            }
+        } catch (Exception e) { Log.e(TAG, "addMenuItem error", e); }
+        return null; // null means failed
+    }
+
+    public boolean updateMenuItem(String token, MenuItem item) {
+        try {
+            if (item.getId() == null || item.getId().isEmpty()) {
+                Log.e(TAG, "updateMenuItem called with null/empty id!");
+                return false;
+            }
+
+            JSONObject payload = new JSONObject()
+                    .put("name", item.getName())
+                    .put("description", item.getDescription() != null ? item.getDescription() : "")
+                    .put("price", item.getPrice())
+                    .put("category", item.getCategory() != null ? item.getCategory() : "")
+                    .put("is_available", item.isAvailable())
+                    .put("image_url", item.getImageUrl() != null ? item.getImageUrl() : "");
+                    payload.put("seller_id", item.getSellerId());
+            // DO NOT include id or seller_id in payload — only filter by id in URL
+            Log.d(TAG, "updateMenuItem id: " + item.getId());
+            Log.d(TAG, "updateMenuItem payload: " + payload);
+
+            return patch("/rest/v1/menu_items?id=eq." + item.getId(), payload.toString(), token);
         } catch (Exception e) { Log.e(TAG, "updateMenuItem error", e); return false; }
+    }
+
+    public boolean updateMenuItemAvailability(String token, String itemId, boolean isAvailable) {
+        try {
+            Log.d(TAG, "updateAvailability itemId: " + itemId + " -> " + isAvailable);
+            JSONObject payload = new JSONObject().put("is_available", isAvailable);
+            boolean result = patch("/rest/v1/menu_items?id=eq." + itemId, payload.toString(), token);
+            Log.d(TAG, "updateAvailability result: " + result);
+            return result;
+        } catch (Exception e) { Log.e(TAG, "updateMenuItemAvailability error", e); return false; }
     }
 
     public boolean deleteMenuItem(String token, String itemId) {
@@ -334,19 +297,136 @@ public class SupabaseAuthService {
             conn.setRequestMethod("DELETE");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Prefer", "return=minimal");
             int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
+            Log.d(TAG, "deleteMenuItem: " + code + " " + body);
             return code >= 200 && code < 300;
         } catch (Exception e) { Log.e(TAG, "deleteMenuItem error", e); return false; }
     }
 
-    // --- HELPER METHODS ---
+    public String uploadImage(String token, String bucket, String path, byte[] data, String mimeType) {
+        try {
+            Log.d(TAG, "uploadImage path: " + path + " size: " + (data != null ? data.length : 0));
+            URL url = new URL(getBaseUrl() + "/storage/v1/object/" + bucket + "/" + path);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("PUT");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Content-Type", mimeType);
+            conn.setRequestProperty("x-upsert", "true");
 
-    public boolean isSeller(String token, String authId) {
-        Profile p = getProfile(token, authId);
-        return p != null && p.isSeller();
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(data);
+            }
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            Log.d(TAG, "uploadImage response: " + code + " " + body);
+
+            if (code >= 200 && code < 300) {
+                return getBaseUrl() + "/storage/v1/object/public/" + bucket + "/" + path;
+            }
+        } catch (Exception e) { Log.e(TAG, "uploadImage error", e); }
+        return null;
     }
 
+    public SellerStats getStats(String token, String sellerId) {
+        SellerStats stats = new SellerStats();
+        if (sellerId == null) return stats;
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/orders?seller_id=eq." + sellerId + "&select=total_amount,status");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray orders = new JSONArray(body);
+                for (int i = 0; i < orders.length(); i++) {
+                    JSONObject order = orders.getJSONObject(i);
+                    String status = order.optString("status", "");
+                    double amount = order.optDouble("total_amount", 0);
+                    if (status.equalsIgnoreCase("delivered")) {
+                        stats.totalSales += amount;
+                        stats.completedOrders++;
+                    } else if (!status.equalsIgnoreCase("cancelled")) {
+                        stats.pendingOrders++;
+                    }
+                }
+            }
+
+            URL mUrl = new URL(getBaseUrl() + "/rest/v1/menu_items?seller_id=eq." + sellerId + "&select=id");
+            HttpURLConnection mConn = (HttpURLConnection) mUrl.openConnection();
+            mConn.setRequestMethod("GET");
+            mConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            mConn.setRequestProperty("Authorization", "Bearer " + token);
+            int mCode = mConn.getResponseCode();
+            String mBody = readStream(mCode < 300 ? mConn.getInputStream() : mConn.getErrorStream());
+            mConn.disconnect();
+            if (mCode >= 200 && mCode < 300) stats.totalItems = new JSONArray(mBody).length();
+        } catch (Exception e) { Log.e(TAG, "getStats error", e); }
+        return stats;
+    }
+
+    // --- HELPERS ---
+
+    private boolean patch(String path, String body, String token) throws IOException {
+        URL url = new URL(getBaseUrl() + path);
+
+        // Android-compatible PATCH workaround
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        try {
+            // This reflection approach works on Android's okhttp-backed HttpURLConnection
+            Object delegate = conn;
+            try {
+                java.lang.reflect.Field f = conn.getClass().getDeclaredField("delegate");
+                f.setAccessible(true);
+                delegate = f.get(conn);
+            } catch (Exception ignored) {}
+
+            java.lang.reflect.Method m = delegate.getClass().getDeclaredMethod("setRequestMethod", String.class);
+            m.setAccessible(true);
+            m.invoke(delegate, "PATCH");
+        } catch (Exception e) {
+            Log.e(TAG, "PATCH reflection failed: " + e.getMessage());
+        }
+
+        conn.setDoOutput(true);
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Prefer", "return=minimal");
+        conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+        conn.setRequestProperty("Authorization", "Bearer " + token);
+
+        byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
+        conn.setRequestProperty("Content-Length", String.valueOf(bodyBytes.length));
+
+        Log.d(TAG, "=== PATCH REQUEST ===");
+        Log.d(TAG, "URL: " + url);
+        Log.d(TAG, "Body: " + body);
+        Log.d(TAG, "Method: " + conn.getRequestMethod());
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(bodyBytes);
+            os.flush();
+        }
+
+        int code = conn.getResponseCode();
+        String responseBody = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+        conn.disconnect();
+
+        Log.d(TAG, "=== PATCH RESPONSE ===");
+        Log.d(TAG, "Status: " + code);
+        Log.d(TAG, "Response: " + responseBody);
+
+        return code >= 200 && code < 300;
+    }
     private HttpResponse post(String path, String body, String token) throws IOException {
         URL url = new URL(getBaseUrl() + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -355,7 +435,9 @@ public class SupabaseAuthService {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
         if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
-        try (OutputStream os = conn.getOutputStream()) { os.write(body.getBytes(StandardCharsets.UTF_8)); }
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(body.getBytes(StandardCharsets.UTF_8));
+        }
         int code = conn.getResponseCode();
         String resp = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
         conn.disconnect();
@@ -379,7 +461,26 @@ public class SupabaseAuthService {
     }
 
     private static class HttpResponse {
-        final int statusCode; final String body;
+        final int statusCode;
+        final String body;
         HttpResponse(int s, String b) { this.statusCode = s; this.body = b; }
+    }
+
+    public boolean isSeller(String token, String authId) {
+        Profile p = getProfile(token, authId);
+        return p != null && p.isSeller();
+    }
+
+    public void deleteImage(String token, String bucket, String path) {
+        try {
+            URL url = new URL(getBaseUrl() + "/storage/v1/object/" + bucket + "/" + path);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("DELETE");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            Log.d(TAG, "deleteImage: " + code + " path: " + path);
+            conn.disconnect();
+        } catch (Exception e) { Log.e(TAG, "deleteImage error", e); }
     }
 }
