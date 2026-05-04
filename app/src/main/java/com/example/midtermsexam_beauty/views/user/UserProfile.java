@@ -29,7 +29,7 @@ public class UserProfile extends AppCompatActivity {
 
     private EditText etFullName, etPhone;
     private SwitchMaterial switchIsSeller;
-    private ImageButton settingBtn, orderBtn, favBtn, addressBtn;
+    private ImageButton settingBtn, favBtn, addressBtn;
     private Button btnSave, btnLogout;
     private SessionManager session;
     private SupabaseAuthService authService;
@@ -54,7 +54,6 @@ public class UserProfile extends AppCompatActivity {
         etPhone = findViewById(R.id.etPhone);
         switchIsSeller = findViewById(R.id.switchIsSeller);
         settingBtn = findViewById(R.id.settings_btn);
-        orderBtn = findViewById(R.id.order_btn);
         favBtn = findViewById(R.id.fav_btn);
         addressBtn = findViewById(R.id.address_btn);
         btnSave = findViewById(R.id.btnSaveProfile);
@@ -67,10 +66,6 @@ public class UserProfile extends AppCompatActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         });
-
-        orderBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Order Lists", Toast.LENGTH_SHORT).show()
-        );
 
         favBtn.setOnClickListener(v ->
                 Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show()

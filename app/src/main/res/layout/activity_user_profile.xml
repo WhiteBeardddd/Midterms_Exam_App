@@ -92,19 +92,6 @@
                     android:padding="18dp">
 
                     <ImageButton
-                        android:id="@+id/order_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="70dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/icon_button_bg"
-                        android:contentDescription="Orders"
-                        android:padding="16dp"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/wallet_icon"
-                        app:tint="@color/color_primary"
-                        tools:ignore="HardcodedText" />
-
-                    <ImageButton
                         android:id="@+id/fav_btn"
                         android:layout_width="0dp"
                         android:layout_height="70dp"
