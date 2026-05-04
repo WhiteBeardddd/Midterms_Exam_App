@@ -6,16 +6,23 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
+import com.example.midtermsexam_beauty.adapters.NavbarCard;
+import com.example.midtermsexam_beauty.adapters.MenuAdapter; // UPDATED: Using the new Adapter
+import com.example.midtermsexam_beauty.models.MenuItem;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class ViewProductDetails extends AppCompatActivity {
-    private static final String DEFAULT_BRANCH = "Placeholder Branch";
     private static final String DEFAULT_SHOP_NAME = "Restaurant Placeholder";
     private static final float DEFAULT_RATING = 5.0f;
 
@@ -24,19 +31,35 @@ public class ViewProductDetails extends AppCompatActivity {
     private TextView shopLogoInitials;
     private TextView shopTitle;
     private TextView shopRating;
-    private TextView shopSearchLabel;
     private TextView shopSectionNote;
+
+    // Header Buttons for FoodPanda design
     private ImageButton backButton;
+    private ImageButton favoriteButton;
+    private ImageButton shareButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_view_details);
 
+        // 1. Initialize UI bindings
         bindViews();
         styleViews();
-        bindShopHeader(readShopPayload());
-        backButton.setOnClickListener(v -> finish());
+
+        // 2. ACTIVATE THE NAVBAR
+        // This ensures the navigation to Home, Search, and Cart works
+        NavbarCard.setupNavbar(this);
+
+        // 3. Load Storefront Data
+        ShopPayload payload = readShopPayload();
+        bindShopHeader(payload);
+
+        // 4. Initialize the dynamic menu with the NEW Adapter
+        setupMenuGrid(payload.shopName);
+
+        // 5. Setup Action Listeners
+        setupClickListeners(payload);
     }
 
     private void bindViews() {
@@ -45,9 +68,23 @@ public class ViewProductDetails extends AppCompatActivity {
         shopLogoInitials = findViewById(R.id.shop_logo_initials);
         shopTitle = findViewById(R.id.shop_title);
         shopRating = findViewById(R.id.rating_text);
-        shopSearchLabel = findViewById(R.id.shop_search_label);
         shopSectionNote = findViewById(R.id.shop_section_note);
+
         backButton = findViewById(R.id.back_btn);
+        favoriteButton = findViewById(R.id.favorite_btn);
+        shareButton = findViewById(R.id.share_btn);
+    }
+
+    private void setupClickListeners(ShopPayload payload) {
+        backButton.setOnClickListener(v -> finish());
+
+        favoriteButton.setOnClickListener(v ->
+                Toast.makeText(this, "Added " + payload.shopName + " to Favorites!", Toast.LENGTH_SHORT).show()
+        );
+
+        shareButton.setOnClickListener(v ->
+                Toast.makeText(this, "Sharing " + payload.shopName + " storefront...", Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void styleViews() {
@@ -67,9 +104,8 @@ public class ViewProductDetails extends AppCompatActivity {
     private void bindShopHeader(ShopPayload payload) {
         shopCoverImage.setImageResource(payload.coverImageId);
         bindLogo(payload);
-        shopTitle.setText(buildBranchTitle(payload.shopName));
+        shopTitle.setText(payload.shopName);
         shopRating.setText(buildRatingLabel(payload.rating));
-        shopSearchLabel.setText(buildSearchLabel());
         shopSectionNote.setText(buildSectionNote(payload.shopName));
     }
 
@@ -86,8 +122,40 @@ public class ViewProductDetails extends AppCompatActivity {
         shopLogoInitials.setText(buildInitials(payload.shopName));
     }
 
-    private String buildBranchTitle(String shopName) {
-        return String.format(Locale.US, "%s - %s", shopName, DEFAULT_BRANCH);
+    private void setupMenuGrid(String shopName) {
+        RecyclerView rvMenu = findViewById(R.id.rv_shop_menu);
+        rvMenu.setLayoutManager(new GridLayoutManager(this, 2));
+
+        // Mock Menu Data
+        List<MenuItem> menuItems = new ArrayList<>();
+
+        MenuItem item1 = new MenuItem();
+        item1.setName("Classic Cheeseburger");
+        item1.setDescription("100% Beef with cheese");
+        item1.setPrice(120.00);
+        menuItems.add(item1);
+
+        MenuItem item2 = new MenuItem();
+        item2.setName("Large Fries");
+        item2.setDescription("Crispy and golden");
+        item2.setPrice(65.00);
+        menuItems.add(item2);
+
+        MenuItem item3 = new MenuItem();
+        item3.setName("House Iced Tea");
+        item3.setDescription("Refreshing cold drink");
+        item3.setPrice(45.00);
+        menuItems.add(item3);
+
+        MenuItem item4 = new MenuItem();
+        item4.setName("Chicken Nuggets");
+        item4.setDescription("6 pieces with dip");
+        item4.setPrice(95.00);
+        menuItems.add(item4);
+
+        // UPDATED: Now using MenuAdapter with the new item_menu_row layout
+        MenuAdapter adapter = new MenuAdapter(this, menuItems, shopName);
+        rvMenu.setAdapter(adapter);
     }
 
     private String buildRatingLabel(float rating) {
@@ -95,12 +163,8 @@ public class ViewProductDetails extends AppCompatActivity {
         return String.format(Locale.US, "%.1f (100+ ratings)", resolvedRating);
     }
 
-    private String buildSearchLabel() {
-        return "Search menu";
-    }
-
     private String buildSectionNote(String shopName) {
-        return String.format(Locale.US, "Most ordered items for %s will be shown here once the menu data is wired.", shopName);
+        return "Most ordered right now at " + shopName + ".";
     }
 
     private String buildInitials(String shopName) {
@@ -116,14 +180,11 @@ public class ViewProductDetails extends AppCompatActivity {
             }
         }
 
-        return initials.length() > 0 ? initials.toString() : "TB";
+        return initials.length() > 0 ? initials.toString() : "ST";
     }
 
     private String sanitize(String value, String fallback) {
-        if (value == null) {
-            return fallback;
-        }
-
+        if (value == null) return fallback;
         String trimmed = value.trim();
         return trimmed.isEmpty() ? fallback : trimmed;
     }
