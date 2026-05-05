@@ -34,7 +34,6 @@ public class PopularProducts extends AppCompatActivity {
 
         ListView popularListView = findViewById(R.id.popular_recycler);
 
-        // Initialize adapter with empty list first
         popularAdapter = new PopularAndFeaturedAdapter(this, popularProducts);
         popularListView.setAdapter(popularAdapter);
 
@@ -46,39 +45,31 @@ public class PopularProducts extends AppCompatActivity {
         toPrevious = findViewById(R.id.back_btn);
         toPrevious.setOnClickListener(view -> finish());
 
-        // Fetch dynamic shops from backend
-        fetchDynamicShops();
+        fetchDynamicMenuItems();
     }
 
-    private void fetchDynamicShops() {
+    private void fetchDynamicMenuItems() {
         SessionManager session = new SessionManager(this);
         SupabaseAuthService supabase = new SupabaseAuthService();
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         executor.execute(() -> {
-            List<Product> dynamicShops = supabase.getAllShops(session.getToken());
+            List<Product> dynamicItems = supabase.getRandomMenuItems(session.getToken());
             runOnUiThread(() -> {
                 popularProducts.clear();
-                popularProducts.addAll(dynamicShops);
+                popularProducts.addAll(dynamicItems);
                 popularAdapter.notifyDataSetChanged();
             });
         });
     }
 
     private void openProductDetails(Product product) {
-        Intent intent = new Intent(this, ViewProductDetails.class);
-        intent.putExtra("imageId", product.getImageID());
-        intent.putExtra("name", product.getName());
-        intent.putExtra("price", product.getPrice());
-        intent.putExtra("description", product.getDescription());
-        intent.putExtra("rating", product.getRating());
-        intent.putExtra("category", product.getCategory());
-        intent.putExtra("skin_type", product.getSkin_type());
-        intent.putExtra("availability", product.getAvalability());
-
-        // CRITICAL: Pass the seller ID so the details page knows whose menu to fetch
-        intent.putExtra("sellerId", product.getSellerId());
-
+        Intent intent = new Intent(this, MenuItemDetailsActivity.class);
+        intent.putExtra("item_name", product.getName());
+        intent.putExtra("item_desc", product.getDescription());
+        intent.putExtra("item_price", (double) product.getPrice());
+        intent.putExtra("shop_name", product.getShopName());
+        intent.putExtra("image_url", product.getImageUrl());
         startActivity(intent);
     }
 }

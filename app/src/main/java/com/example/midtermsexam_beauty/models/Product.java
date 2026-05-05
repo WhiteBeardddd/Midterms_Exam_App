@@ -24,7 +24,8 @@ public class Product {
     private final String skinType;
     private int counter;
     private String sellerId;
-    private String imageUrl; // NEW: To hold the dynamic image from Supabase
+    private String imageUrl;
+    private String shopName; // NEW
 
     public Product(int imageID, String name, String description, float price, String category,
                    boolean availability, float rating, String skinType) {
@@ -55,9 +56,11 @@ public class Product {
     public String getSellerId() { return sellerId; }
     public void setSellerId(String sellerId) { this.sellerId = sellerId; }
 
-    // NEW: Getters and Setters for the Image URL
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getShopName() { return shopName; }
+    public void setShopName(String shopName) { this.shopName = shopName; }
 
     private static List<Product> loadMealsFromJSON(Context context, String fileName, String key) {
         List<Product> productList = new ArrayList<>();

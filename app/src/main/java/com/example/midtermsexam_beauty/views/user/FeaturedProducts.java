@@ -35,7 +35,6 @@ public class FeaturedProducts extends AppCompatActivity {
         toPrevious = findViewById(R.id.back_btn);
         ListView featuredListView = findViewById(R.id.featured_recycler);
 
-        // Initialize adapter with empty list first
         adapter = new PopularAndFeaturedAdapter(this, featuredProducts);
         featuredListView.setAdapter(adapter);
 
@@ -46,7 +45,6 @@ public class FeaturedProducts extends AppCompatActivity {
 
         toPrevious.setOnClickListener(view -> finish());
 
-        // Fetch dynamic shops from backend
         fetchDynamicShops();
     }
 
@@ -75,10 +73,7 @@ public class FeaturedProducts extends AppCompatActivity {
         intent.putExtra("category", product.getCategory());
         intent.putExtra("skin_type", product.getSkin_type());
         intent.putExtra("availability", product.getAvalability());
-
-        // CRITICAL: Pass the seller ID so the details page knows whose menu to fetch
         intent.putExtra("sellerId", product.getSellerId());
-
         startActivity(intent);
     }
 }

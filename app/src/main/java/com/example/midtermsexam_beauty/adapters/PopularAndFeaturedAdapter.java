@@ -8,6 +8,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 
@@ -24,19 +25,13 @@ public class PopularAndFeaturedAdapter extends BaseAdapter {
     }
 
     @Override
-    public int getCount() {
-        return productList.size();
-    }
+    public int getCount() { return productList.size(); }
 
     @Override
-    public Object getItem(int position) {
-        return productList.get(position);
-    }
+    public Object getItem(int position) { return productList.get(position); }
 
     @Override
-    public long getItemId(int position) {
-        return position;
-    }
+    public long getItemId(int position) { return position; }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -50,13 +45,25 @@ public class PopularAndFeaturedAdapter extends BaseAdapter {
         }
 
         Product product = productList.get(position);
-        holder.productImage.setImageResource(product.getImageID());
+
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            Glide.with(context)
+                    .load(product.getImageUrl())
+                    .centerCrop()
+                    .placeholder(R.drawable.product_1)
+                    .into(holder.productImage);
+        } else {
+            holder.productImage.setImageResource(product.getImageID());
+        }
+
         holder.productName.setText(product.getName());
-        holder.productPrice.setText(String.format(Locale.US, "P%.2f", product.getPrice()));
+        holder.productPrice.setText(String.format(Locale.US, "₱%.2f", product.getPrice()));
         holder.productDescription.setText(product.getDescription());
         holder.productRating.setText(String.format(Locale.US, "%.1f", product.getRating()));
-        holder.productCategory.setText("Category: " + product.getCategory());
-        holder.productSkinType.setText(product.getAvalability() ? "Available now" : "Unavailable");
+        holder.productCategory.setText(product.getCategory());
+
+        String bottomText = product.getShopName() != null ? "Shop: " + product.getShopName() : "Available now";
+        holder.productSkinType.setText(bottomText);
 
         return convertView;
     }

@@ -3,11 +3,11 @@ package com.example.midtermsexam_beauty.utilities;
 import android.util.Log;
 
 import com.example.midtermsexam_beauty.BuildConfig;
-import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.BuyerAddress;
 import com.example.midtermsexam_beauty.models.MenuItem;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.models.Profile;
+import com.example.midtermsexam_beauty.R;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -103,6 +103,7 @@ public class SupabaseAuthService {
                     p.setFullName(obj.optString("full_name"));
                     p.setPhone(obj.optString("phone"));
                     p.setSeller(obj.optBoolean("is_seller"));
+                    p.setAvatarUrl(obj.optString("avatar_url", ""));
                     return p;
                 }
             }
@@ -110,14 +111,15 @@ public class SupabaseAuthService {
         return null;
     }
 
-    public boolean updateProfile(String token, String authId, String fullName, String phone, boolean isSeller) {
+    public boolean updateProfile(String token, String authId, String fullName, String phone, boolean isSeller, String avatarUrl) {
         if (token == null || authId == null) return false;
         try {
             JSONObject payload = new JSONObject()
                     .put("auth_id", authId)
                     .put("full_name", fullName != null ? fullName : "")
                     .put("phone", phone != null ? phone : "")
-                    .put("is_seller", isSeller);
+                    .put("is_seller", isSeller)
+                    .put("avatar_url", avatarUrl != null ? avatarUrl : "");
 
             URL url = new URL(getBaseUrl() + "/rest/v1/profile?on_conflict=auth_id");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -137,7 +139,6 @@ public class SupabaseAuthService {
         } catch (Exception e) { return false; }
     }
 
-    // --- STORE NAME INTEGRATION ---
     public boolean saveStoreName(String token, String profileId, String storeName) {
         if (token == null || profileId == null) return false;
         try {
@@ -225,7 +226,7 @@ public class SupabaseAuthService {
         List<Product> shops = new ArrayList<>();
         if (token == null) return shops;
         try {
-            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,profile(full_name)");
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,profile(full_name,avatar_url)");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
@@ -241,19 +242,78 @@ public class SupabaseAuthService {
                     String id = obj.getString("id");
 
                     String shopName = "Unnamed Shop";
+                    String avatarUrl = "";
+
                     if (obj.has("store_name") && !obj.isNull("store_name") && !obj.getString("store_name").isEmpty()){
                         shopName = obj.optString("store_name", shopName);
                     } else if (obj.has("profile") && !obj.isNull("profile")) {
                         shopName = obj.getJSONObject("profile").optString("full_name", shopName);
                     }
 
+                    if (obj.has("profile") && !obj.isNull("profile")) {
+                        avatarUrl = obj.getJSONObject("profile").optString("avatar_url", "");
+                    }
+
                     Product shop = new Product(R.drawable.product_1, shopName, obj.optString("description", "A great place to eat!"), 0.0f, "Restaurant", true, 4.8f, "All");
                     shop.setSellerId(id);
+                    shop.setImageUrl(avatarUrl);
                     shops.add(shop);
                 }
             }
         } catch (Exception e) { }
         return shops;
+    }
+
+    public List<Product> getRandomMenuItems(String token) {
+        List<Product> items = new ArrayList<>();
+        if (token == null) return items;
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/menu_items?select=*,seller_profiles(store_name,profile(full_name))&is_available=eq.true&limit=50");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                List<JSONObject> jsonList = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) jsonList.add(arr.getJSONObject(i));
+                java.util.Collections.shuffle(jsonList);
+
+                for (int i = 0; i < Math.min(jsonList.size(), 20); i++) {
+                    JSONObject obj = jsonList.get(i);
+                    String shopName = "Unknown Shop";
+
+                    if (obj.has("seller_profiles") && !obj.isNull("seller_profiles")) {
+                        JSONObject sp = obj.getJSONObject("seller_profiles");
+                        if (sp.has("store_name") && !sp.isNull("store_name") && !sp.getString("store_name").isEmpty()) {
+                            shopName = sp.getString("store_name");
+                        } else if (sp.has("profile") && !sp.isNull("profile")) {
+                            shopName = sp.getJSONObject("profile").optString("full_name", shopName);
+                        }
+                    }
+
+                    Product product = new Product(
+                            R.drawable.product_1,
+                            obj.getString("name"),
+                            obj.optString("description", ""),
+                            (float) obj.optDouble("price", 0.0),
+                            obj.optString("category", "Food"),
+                            true,
+                            4.8f,
+                            shopName
+                    );
+                    product.setSellerId(obj.getString("seller_id"));
+                    product.setImageUrl(obj.optString("image_url", ""));
+                    product.setShopName(shopName);
+                    items.add(product);
+                }
+            }
+        } catch (Exception e) { Log.e(TAG, "getRandomMenuItems error", e); }
+        return items;
     }
 
     public List<MenuItem> getMenuItems(String token, String sellerId) {
@@ -518,8 +578,6 @@ public class SupabaseAuthService {
         } catch (Exception e) { }
     }
 
-    // --- ADDED MISSING METHODS FOR ADDRESS AND PASSWORD ---
-
     public BuyerAddress getBuyerAddress(String token, String buyerId) {
         if (token == null || buyerId == null) return null;
         try {
@@ -573,11 +631,10 @@ public class SupabaseAuthService {
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
-
             int code = conn.getResponseCode();
             conn.disconnect();
             return code >= 200 && code < 300;
-        } catch (Exception e) { Log.e(TAG, "saveBuyerAddress error", e); return false; }
+        } catch (Exception e) { return false; }
     }
 
     public boolean updatePassword(String token, String newPassword) {
@@ -595,10 +652,9 @@ public class SupabaseAuthService {
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
-
             int code = conn.getResponseCode();
             conn.disconnect();
             return code >= 200 && code < 300;
-        } catch (Exception e) { Log.e(TAG, "updatePassword error", e); return false; }
+        } catch (Exception e) { return false; }
     }
 }

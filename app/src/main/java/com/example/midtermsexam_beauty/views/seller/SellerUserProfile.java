@@ -112,13 +112,7 @@ public class SellerUserProfile extends AppCompatActivity {
 
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            boolean success = authService.updateProfile(
-                    session.getToken(),
-                    session.getUserId(),
-                    fullName,
-                    phone,
-                    isSeller
-            );
+            boolean success = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller, "");
 
             runOnUiThread(() -> {
                 btnSave.setEnabled(true);

@@ -32,6 +32,7 @@ public class UserProfile extends AppCompatActivity {
     private SwitchMaterial switchIsSeller;
     private ImageButton settingBtn, orderBtn, favBtn, addressBtn;
     private Button btnSave, btnLogout;
+
     private SessionManager session;
     private SupabaseAuthService authService;
     private ExecutorService executor;
@@ -65,7 +66,6 @@ public class UserProfile extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
-        // Toggle Store Name visibility based on the Seller Switch
         switchIsSeller.setOnCheckedChangeListener((buttonView, isChecked) -> {
             layoutStoreName.setVisibility(isChecked ? View.VISIBLE : View.GONE);
         });
@@ -90,7 +90,6 @@ public class UserProfile extends AppCompatActivity {
             String storeName = "";
 
             if (profile != null && profile.getId() != null) {
-                // Fetch the store name regardless of current Seller Mode status
                 storeName = authService.getStoreName(session.getToken(), profile.getId());
             }
 
@@ -99,11 +98,7 @@ public class UserProfile extends AppCompatActivity {
                 runOnUiThread(() -> {
                     etFullName.setText(profile.getFullName());
                     etPhone.setText(profile.getPhone());
-
-                    // Pre-fill the text field so it's ready when the switch is toggled
                     etStoreName.setText(finalStoreName);
-
-                    // This will automatically trigger the visibility logic
                     switchIsSeller.setChecked(profile.isSeller());
                 });
             }
@@ -117,7 +112,6 @@ public class UserProfile extends AppCompatActivity {
         String storeName = etStoreName.getText().toString().trim();
 
         if (session.getToken() == null || session.getUserId() == null) {
-            Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
             AppNavigator.logout(this, session);
             return;
         }
@@ -136,7 +130,8 @@ public class UserProfile extends AppCompatActivity {
 
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            boolean profileSuccess = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller);
+            // Passing an empty string for the avatar to satisfy the Supabase method without errors
+            boolean profileSuccess = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller, "");
             boolean storeSuccess = true;
 
             if (isSeller && profileSuccess) {

@@ -185,7 +185,7 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <!-- NEW: Dynamic Store Name Field -->
+                <!-- Clean Store Name Field -->
                 <LinearLayout
                     android:id="@+id/layoutStoreName"
                     android:layout_width="match_parent"

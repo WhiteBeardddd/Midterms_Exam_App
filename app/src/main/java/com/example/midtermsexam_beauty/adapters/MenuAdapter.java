@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide; // NEW: Import Glide
+import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.MenuItem;
 import com.example.midtermsexam_beauty.views.user.MenuItemDetailsActivity;
@@ -44,17 +44,15 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         holder.tvName.setText(item.getName());
         holder.tvPrice.setText(String.format(Locale.US, "₱%.2f", item.getPrice()));
         holder.tvDesc.setText(item.getDescription());
-        holder.tvRating.setText("4.9 ★"); // Example static rating
+        holder.tvRating.setText("4.9 ★");
 
-        // NEW: Load the image dynamically using Glide
         if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(item.getImageUrl())
                     .centerCrop()
-                    .placeholder(R.drawable.product_1) // Shows while loading
+                    .placeholder(R.drawable.product_1)
                     .into(holder.ivImage);
         } else {
-            // Fallback to placeholder if the seller didn't upload a photo
             holder.ivImage.setImageResource(R.drawable.product_1);
         }
 
@@ -64,7 +62,6 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             intent.putExtra("item_desc", item.getDescription());
             intent.putExtra("item_price", item.getPrice());
             intent.putExtra("shop_name", shopName);
-            // Optional: Pass the image URL to the Details Activity as well if you want it to show there
             intent.putExtra("image_url", item.getImageUrl());
             context.startActivity(intent);
         });

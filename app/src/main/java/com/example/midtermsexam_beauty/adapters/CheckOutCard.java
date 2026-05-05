@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide; // NEW: Import Glide
+import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 
@@ -54,7 +54,6 @@ public class CheckOutCard extends BaseAdapter {
 
         Product product = productList.get(position);
 
-        // NEW: Load the image using Glide if a URL exists
         if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
             Glide.with(parent.getContext())
                     .load(product.getImageUrl())

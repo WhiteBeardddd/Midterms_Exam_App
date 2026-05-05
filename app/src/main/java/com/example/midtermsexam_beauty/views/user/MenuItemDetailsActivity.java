@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.bumptech.glide.Glide; // NEW: Import Glide
+import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.utilities.ProductManager;
@@ -22,7 +22,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
     private String itemName;
     private String itemDesc;
     private String shopName;
-    private String imageUrl; // NEW: To hold the image link
+    private String imageUrl;
 
     private TextView tvQuantity, tvPrice, tvName, tvDesc;
     private Button btnAddToCart;
@@ -32,7 +32,6 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_item_details);
 
-        // Get Views
         ImageButton btnClose = findViewById(R.id.btn_close);
         ImageButton btnMinus = findViewById(R.id.btn_minus);
         ImageButton btnPlus = findViewById(R.id.btn_plus);
@@ -43,14 +42,12 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         btnAddToCart = findViewById(R.id.btn_add_to_cart);
         ImageView ivImage = findViewById(R.id.item_image);
 
-        // Get Data from Intent
         itemName = getIntent().getStringExtra("item_name");
         itemDesc = getIntent().getStringExtra("item_desc");
         basePrice = getIntent().getDoubleExtra("item_price", 0.0);
         shopName = getIntent().getStringExtra("shop_name");
-        imageUrl = getIntent().getStringExtra("image_url"); // NEW: Get Image URL
+        imageUrl = getIntent().getStringExtra("image_url");
 
-        // NEW: Load dynamic image with Glide
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(imageUrl)
@@ -61,13 +58,11 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
             ivImage.setImageResource(R.drawable.product_1);
         }
 
-        // Set Initial Text
         tvName.setText(itemName);
         tvDesc.setText(itemDesc);
         tvPrice.setText(String.format("₱%.2f", basePrice));
         updateCartButton();
 
-        // Button Listeners
         btnClose.setOnClickListener(v -> finish());
 
         btnPlus.setOnClickListener(v -> {
@@ -103,7 +98,6 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
                 ""
         );
 
-        // NEW: Attach the dynamic image URL to the cart item
         productToAdd.setImageUrl(imageUrl);
 
         ProductManager.getInstance().addProduct(productToAdd, currentQuantity);

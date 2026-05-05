@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.MenuAdapter;
@@ -87,12 +88,23 @@ public class ViewProductDetails extends AppCompatActivity {
                 intent.getIntExtra("logoImageId", 0),
                 sanitize(intent.getStringExtra("name"), DEFAULT_SHOP_NAME),
                 intent.getFloatExtra("rating", DEFAULT_RATING),
-                intent.getStringExtra("sellerId")
+                intent.getStringExtra("sellerId"),
+                intent.getStringExtra("imageUrl") // Reads the URL passed from Homepage
         );
     }
 
     private void bindShopHeader(ShopPayload payload) {
-        shopCoverImage.setImageResource(payload.coverImageId);
+        // Loads dynamic image with Glide if it exists
+        if (payload.imageUrl != null && !payload.imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(payload.imageUrl)
+                    .centerCrop()
+                    .placeholder(R.drawable.product_1)
+                    .into(shopCoverImage);
+        } else {
+            shopCoverImage.setImageResource(payload.coverImageId);
+        }
+
         bindLogo(payload);
         shopTitle.setText(payload.shopName);
         shopRating.setText(buildRatingLabel(payload.rating));
@@ -167,13 +179,15 @@ public class ViewProductDetails extends AppCompatActivity {
         private final String shopName;
         private final float rating;
         private final String sellerId;
+        private final String imageUrl;
 
-        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId) {
+        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId, String imageUrl) {
             this.coverImageId = coverImageId;
             this.logoImageId = logoImageId;
             this.shopName = shopName;
             this.rating = rating;
             this.sellerId = sellerId;
+            this.imageUrl = imageUrl;
         }
     }
 }

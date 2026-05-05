@@ -3,7 +3,6 @@ package com.example.midtermsexam_beauty.views.user;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -37,6 +36,7 @@ public class Homepage extends AppCompatActivity {
 
         List<Product> featuredProducts = getStaticFeaturedShops();
 
+        // LISTENER: Passes the dynamic image URL to the details page
         ProductCard.OnItemClickListener listener = product -> {
             Intent intent = new Intent(this, ViewProductDetails.class);
             intent.putExtra("imageId", product.getImageID());
@@ -48,12 +48,14 @@ public class Homepage extends AppCompatActivity {
             intent.putExtra("skin_type", product.getSkin_type());
             intent.putExtra("availability", product.getAvalability());
             intent.putExtra("sellerId", product.getSellerId());
+            intent.putExtra("imageUrl", product.getImageUrl()); // <- The crucial new line!
             startActivity(intent);
         };
 
         ProductCard featuredAdapter = new ProductCard(this, featuredProducts, listener);
         featuredListView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         featuredListView.setAdapter(featuredAdapter);
+
         popularListView.setLayoutManager(new LinearLayoutManager(this));
 
         SessionManager session = new SessionManager(this);
@@ -61,6 +63,7 @@ public class Homepage extends AppCompatActivity {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         executor.execute(() -> {
+            // Fetches all shops and their avatar_urls from Supabase
             List<Product> dynamicShops = supabase.getAllShops(session.getToken());
             runOnUiThread(() -> {
                 RestaurantFeedAdapter popularAdapter = new RestaurantFeedAdapter(this, dynamicShops, listener);
