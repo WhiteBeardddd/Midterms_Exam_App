@@ -66,9 +66,8 @@ public class UserProfile extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
-        switchIsSeller.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            layoutStoreName.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-        });
+        // Removed: toggle listener that revealed/hid the store name field.
+        // layoutStoreName visibility is now handled solely by loadProfile().
 
         loadProfile();
 
@@ -130,7 +129,6 @@ public class UserProfile extends AppCompatActivity {
 
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            // Passing an empty string for the avatar to satisfy the Supabase method without errors
             boolean profileSuccess = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller, "");
             boolean storeSuccess = true;
 

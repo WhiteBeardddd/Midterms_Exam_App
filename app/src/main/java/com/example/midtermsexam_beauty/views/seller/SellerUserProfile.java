@@ -18,7 +18,6 @@ import com.example.midtermsexam_beauty.models.Profile;
 import com.example.midtermsexam_beauty.utilities.AppNavigator;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
-import com.example.midtermsexam_beauty.views.user.Homepage;
 import com.example.midtermsexam_beauty.views.user.UserProfile;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
@@ -27,7 +26,7 @@ import java.util.concurrent.Executors;
 
 public class SellerUserProfile extends AppCompatActivity {
 
-    private EditText etFullName, etPhone;
+    private EditText etFullName, etPhone, etStoreName, etAddress;
     private SwitchMaterial switchIsSeller;
     private ImageButton settingBtn, favBtn, addressBtn;
     private Button btnSave, btnLogout;
@@ -44,11 +43,12 @@ public class SellerUserProfile extends AppCompatActivity {
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
 
-        // Ensure we use the Seller Navbar logic
         SellerNavCard.setupNavbar(this);
 
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
+        etStoreName = findViewById(R.id.etStoreName);
+        etAddress = findViewById(R.id.etAddress);
         switchIsSeller = findViewById(R.id.switchIsSeller);
         settingBtn = findViewById(R.id.settings_btn);
         favBtn = findViewById(R.id.fav_btn);
@@ -83,10 +83,24 @@ public class SellerUserProfile extends AppCompatActivity {
                     session.getToken(),
                     session.getUserId()
             );
+
+            String storeName = "";
+            String address = "";
+
+            if (profile != null && profile.getId() != null) {
+                storeName = authService.getStoreName(session.getToken(), profile.getId());
+                address = authService.getAddress(session.getToken(), profile.getId());
+            }
+
+            String finalStoreName = storeName;
+            String finalAddress = address;
+
             if (profile != null) {
                 runOnUiThread(() -> {
                     etFullName.setText(profile.getFullName());
                     etPhone.setText(profile.getPhone());
+                    etStoreName.setText(finalStoreName);
+                    etAddress.setText(finalAddress);
                     switchIsSeller.setChecked(profile.isSeller());
                 });
             }
@@ -97,6 +111,8 @@ public class SellerUserProfile extends AppCompatActivity {
         String fullName = etFullName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         boolean isSeller = switchIsSeller.isChecked();
+        String storeName = etStoreName.getText().toString().trim();
+        String address = etAddress.getText().toString().trim();
 
         if (session.getToken() == null || session.getUserId() == null) {
             Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
@@ -110,21 +126,41 @@ public class SellerUserProfile extends AppCompatActivity {
             return;
         }
 
+        if (storeName.isEmpty()) {
+            etStoreName.setError("Store name is required");
+            etStoreName.requestFocus();
+            return;
+        }
+
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            boolean success = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller, "");
+            boolean profileSuccess = authService.updateProfile(
+                    session.getToken(), session.getUserId(), fullName, phone, isSeller, ""
+            );
+
+            boolean storeSuccess = true;
+            boolean addressSuccess = true;
+
+            if (profileSuccess) {
+                storeSuccess = authService.saveStoreName(
+                        session.getToken(), session.getProfileId(), storeName
+                );
+                addressSuccess = authService.saveAddress(
+                        session.getToken(), session.getProfileId(), address
+                );
+            }
+
+            boolean finalSuccess = profileSuccess && storeSuccess && addressSuccess;
 
             runOnUiThread(() -> {
                 btnSave.setEnabled(true);
-                if (success) {
+                if (finalSuccess) {
                     session.setIsSeller(isSeller);
                     Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show();
-                    
+
                     if (!isSeller) {
-                        // Redirect to standard UserProfile if they disabled seller mode
                         startActivity(new Intent(this, UserProfile.class));
                     } else {
-                        // Stay in seller dashboard
                         startActivity(new Intent(this, SellerDashboard.class));
                     }
                     finish();

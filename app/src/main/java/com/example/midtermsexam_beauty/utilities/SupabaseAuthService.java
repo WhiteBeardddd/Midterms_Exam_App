@@ -104,6 +104,7 @@ public class SupabaseAuthService {
                     p.setPhone(obj.optString("phone"));
                     p.setSeller(obj.optBoolean("is_seller"));
                     p.setAvatarUrl(obj.optString("avatar_url", ""));
+
                     return p;
                 }
             }
@@ -554,7 +555,6 @@ public class SupabaseAuthService {
             return json.optString("message", json.optString("msg", body));
         } catch (Exception e) { return body; }
     }
-
     private static class HttpResponse {
         final int statusCode;
         final String body;
@@ -656,5 +656,124 @@ public class SupabaseAuthService {
             conn.disconnect();
             return code >= 200 && code < 300;
         } catch (Exception e) { return false; }
+    }
+
+    public String getAddress(String token, String profileId) {
+        try {
+            URL url = new URL(getBaseUrl()
+                    + "/rest/v1/seller_profiles?profile_id=eq." + profileId
+                    + "&select=address");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) {
+                    return arr.getJSONObject(0).optString("address", "");
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getAddress error", e);
+        }
+        return "";
+    }
+
+    /**
+     * Upserts the seller's shop address into the seller_profiles table.
+     * Mirrors saveStoreName() — checks for an existing row first, then
+     * PATCHes or POSTs accordingly.
+     */
+    public boolean saveAddress(String token, String profileId, String address) {
+        if (token == null || profileId == null) return false;
+        try {
+            // 1. Check whether a seller_profiles row already exists
+            URL checkUrl = new URL(getBaseUrl()
+                    + "/rest/v1/seller_profiles?profile_id=eq." + profileId
+                    + "&select=id");
+            HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            checkConn.setRequestProperty("Authorization", "Bearer " + token);
+            int checkCode = checkConn.getResponseCode();
+            String checkBody = readStream(
+                    checkCode < 300 ? checkConn.getInputStream() : checkConn.getErrorStream());
+            checkConn.disconnect();
+
+            JSONArray arr = new JSONArray(checkBody);
+
+            // 2. Build payload (only the address column — avoids overwriting store_name)
+            JSONObject payload = new JSONObject()
+                    .put("profile_id", profileId)
+                    .put("address", address != null ? address : "");
+
+            if (arr.length() > 0) {
+                // Row exists → PATCH
+                String existingId = arr.getJSONObject(0).getString("id");
+                return patch("/rest/v1/seller_profiles?id=eq." + existingId,
+                        payload.toString(), token);
+            } else {
+                // No row yet → POST (create with sensible defaults)
+                payload.put("is_open", true);
+                HttpResponse res = post("/rest/v1/seller_profiles",
+                        payload.toString(), token);
+                return res.statusCode >= 200 && res.statusCode < 300;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "saveAddress error", e);
+            return false;
+        }
+    }
+
+    public String getShopBackground(String token, String profileId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=seller_profile_bg");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("seller_profile_bg", "");
+            }
+        } catch (Exception e) { Log.e(TAG, "getShopBackground error", e); }
+        return "";
+    }
+
+    public boolean saveShopBackground(String token, String profileId, String backgroundUrl) {
+        if (token == null || profileId == null) return false;
+        try {
+            // Reuse the same upsert pattern as saveStoreName/saveAddress
+            URL checkUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
+            HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            checkConn.setRequestProperty("Authorization", "Bearer " + token);
+            int checkCode = checkConn.getResponseCode();
+            String checkBody = readStream(checkCode < 300 ? checkConn.getInputStream() : checkConn.getErrorStream());
+            checkConn.disconnect();
+
+            JSONArray arr = new JSONArray(checkBody);
+            JSONObject payload = new JSONObject()
+                    .put("profile_id", profileId)
+                    .put("seller_profile_bg", backgroundUrl != null ? backgroundUrl : "");
+
+            if (arr.length() > 0) {
+                String existingId = arr.getJSONObject(0).getString("id");
+                return patch("/rest/v1/seller_profiles?id=eq." + existingId, payload.toString(), token);
+            } else {
+                payload.put("is_open", true);
+                HttpResponse res = post("/rest/v1/seller_profiles", payload.toString(), token);
+                return res.statusCode >= 200 && res.statusCode < 300;
+            }
+        } catch (Exception e) { Log.e(TAG, "saveShopBackground error", e); }
+        return false;
     }
 }
