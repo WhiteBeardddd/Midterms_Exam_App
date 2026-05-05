@@ -1,12 +1,17 @@
 package com.example.midtermsexam_beauty.utilities;
 
 import android.util.Log;
+
 import com.example.midtermsexam_beauty.BuildConfig;
+import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.BuyerAddress;
 import com.example.midtermsexam_beauty.models.MenuItem;
+import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.models.Profile;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -101,7 +106,6 @@ public class SupabaseAuthService {
                     return p;
                 }
             }
-            Log.e(TAG, "getProfile failed: " + code + " " + body);
         } catch (Exception e) { Log.e(TAG, "getProfile error", e); }
         return null;
     }
@@ -109,11 +113,11 @@ public class SupabaseAuthService {
     public boolean updateProfile(String token, String authId, String fullName, String phone, boolean isSeller) {
         if (token == null || authId == null) return false;
         try {
-            JSONObject payload = new JSONObject();
-            payload.put("auth_id", authId);
-            payload.put("full_name", fullName != null ? fullName : "");
-            payload.put("phone", phone != null ? phone : "");
-            payload.put("is_seller", isSeller);
+            JSONObject payload = new JSONObject()
+                    .put("auth_id", authId)
+                    .put("full_name", fullName != null ? fullName : "")
+                    .put("phone", phone != null ? phone : "")
+                    .put("is_seller", isSeller);
 
             URL url = new URL(getBaseUrl() + "/rest/v1/profile?on_conflict=auth_id");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -127,18 +131,63 @@ public class SupabaseAuthService {
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
             }
+            int code = conn.getResponseCode();
+            conn.disconnect();
+            return code >= 200 && code < 300;
+        } catch (Exception e) { return false; }
+    }
 
+    // --- STORE NAME INTEGRATION ---
+    public boolean saveStoreName(String token, String profileId, String storeName) {
+        if (token == null || profileId == null) return false;
+        try {
+            URL checkUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
+            HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            checkConn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int checkCode = checkConn.getResponseCode();
+            String checkBody = readStream(checkCode < 300 ? checkConn.getInputStream() : checkConn.getErrorStream());
+            checkConn.disconnect();
+
+            JSONArray arr = new JSONArray(checkBody);
+            JSONObject payload = new JSONObject()
+                    .put("profile_id", profileId)
+                    .put("store_name", storeName != null ? storeName : "")
+                    .put("is_open", true);
+
+            if (arr.length() > 0) {
+                String existingSellerId = arr.getJSONObject(0).getString("id");
+                return patch("/rest/v1/seller_profiles?id=eq." + existingSellerId, payload.toString(), token);
+            } else {
+                HttpResponse res = post("/rest/v1/seller_profiles", payload.toString(), token);
+                return res.statusCode >= 200 && res.statusCode < 300;
+            }
+        } catch (Exception e) { return false; }
+    }
+
+    public String getStoreName(String token, String profileId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=store_name");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
             int code = conn.getResponseCode();
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-            Log.d(TAG, "updateProfile: " + code + " " + body);
-            return code >= 200 && code < 300;
-        } catch (Exception e) { Log.e(TAG, "updateProfile error", e); return false; }
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("store_name", "");
+            }
+        } catch (Exception e) { }
+        return "";
     }
 
     public String getSellerIdByAuthId(String token, String authId) {
         try {
-            Log.d(TAG, "getSellerIdByAuthId authId: " + authId);
             URL url = new URL(getBaseUrl() + "/rest/v1/profile?auth_id=eq." + authId + "&select=id");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
@@ -148,16 +197,10 @@ public class SupabaseAuthService {
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
 
-            Log.d(TAG, "profile query: " + code + " " + body);
-
             if (code >= 200 && code < 300) {
                 JSONArray arr = new JSONArray(body);
-                if (arr.length() == 0) {
-                    Log.e(TAG, "No profile found for authId: " + authId);
-                    return null;
-                }
+                if (arr.length() == 0) return null;
                 String profileId = arr.getJSONObject(0).getString("id");
-                Log.d(TAG, "profileId: " + profileId);
 
                 URL sUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
                 HttpURLConnection sConn = (HttpURLConnection) sUrl.openConnection();
@@ -168,19 +211,49 @@ public class SupabaseAuthService {
                 String sBody = readStream(sCode < 300 ? sConn.getInputStream() : sConn.getErrorStream());
                 sConn.disconnect();
 
-                Log.d(TAG, "seller_profiles query: " + sCode + " " + sBody);
-
                 if (sCode >= 200 && sCode < 300) {
                     JSONArray sArr = new JSONArray(sBody);
-                    if (sArr.length() == 0) {
-                        Log.e(TAG, "No seller_profile for profileId: " + profileId);
-                        return null;
-                    }
+                    if (sArr.length() == 0) return null;
                     return sArr.getJSONObject(0).getString("id");
                 }
             }
-        } catch (Exception e) { Log.e(TAG, "getSellerIdByAuthId error", e); }
+        } catch (Exception e) { }
         return null;
+    }
+
+    public List<Product> getAllShops(String token) {
+        List<Product> shops = new ArrayList<>();
+        if (token == null) return shops;
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,profile(full_name)");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    String id = obj.getString("id");
+
+                    String shopName = "Unnamed Shop";
+                    if (obj.has("store_name") && !obj.isNull("store_name") && !obj.getString("store_name").isEmpty()){
+                        shopName = obj.optString("store_name", shopName);
+                    } else if (obj.has("profile") && !obj.isNull("profile")) {
+                        shopName = obj.getJSONObject("profile").optString("full_name", shopName);
+                    }
+
+                    Product shop = new Product(R.drawable.product_1, shopName, obj.optString("description", "A great place to eat!"), 0.0f, "Restaurant", true, 4.8f, "All");
+                    shop.setSellerId(id);
+                    shops.add(shop);
+                }
+            }
+        } catch (Exception e) { }
+        return shops;
     }
 
     public List<MenuItem> getMenuItems(String token, String sellerId) {
@@ -195,8 +268,6 @@ public class SupabaseAuthService {
             int code = conn.getResponseCode();
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-
-            Log.d(TAG, "getMenuItems: " + code + " items raw: " + body);
 
             if (code >= 200 && code < 300) {
                 JSONArray arr = new JSONArray(body);
@@ -214,7 +285,7 @@ public class SupabaseAuthService {
                     items.add(item);
                 }
             }
-        } catch (Exception e) { Log.e(TAG, "getMenuItems error", e); }
+        } catch (Exception e) { }
         return items;
     }
 
@@ -236,7 +307,7 @@ public class SupabaseAuthService {
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Prefer", "return=representation"); // return the created row
+            conn.setRequestProperty("Prefer", "return=representation");
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
@@ -245,50 +316,36 @@ public class SupabaseAuthService {
             int code = conn.getResponseCode();
             String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-            Log.d(TAG, "addMenuItem response: " + code + " " + body);
 
             if (code >= 200 && code < 300) {
-                // Parse and return the new row's id
                 JSONArray arr = new JSONArray(body);
-                if (arr.length() > 0) {
-                    return arr.getJSONObject(0).getString("id");
-                }
+                if (arr.length() > 0) return arr.getJSONObject(0).getString("id");
             }
-        } catch (Exception e) { Log.e(TAG, "addMenuItem error", e); }
-        return null; // null means failed
+        } catch (Exception e) { }
+        return null;
     }
 
     public boolean updateMenuItem(String token, MenuItem item) {
         try {
-            if (item.getId() == null || item.getId().isEmpty()) {
-                Log.e(TAG, "updateMenuItem called with null/empty id!");
-                return false;
-            }
-
+            if (item.getId() == null || item.getId().isEmpty()) return false;
             JSONObject payload = new JSONObject()
                     .put("name", item.getName())
                     .put("description", item.getDescription() != null ? item.getDescription() : "")
                     .put("price", item.getPrice())
                     .put("category", item.getCategory() != null ? item.getCategory() : "")
                     .put("is_available", item.isAvailable())
-                    .put("image_url", item.getImageUrl() != null ? item.getImageUrl() : "");
-                    payload.put("seller_id", item.getSellerId());
-            // DO NOT include id or seller_id in payload — only filter by id in URL
-            Log.d(TAG, "updateMenuItem id: " + item.getId());
-            Log.d(TAG, "updateMenuItem payload: " + payload);
+                    .put("image_url", item.getImageUrl() != null ? item.getImageUrl() : "")
+                    .put("seller_id", item.getSellerId());
 
             return patch("/rest/v1/menu_items?id=eq." + item.getId(), payload.toString(), token);
-        } catch (Exception e) { Log.e(TAG, "updateMenuItem error", e); return false; }
+        } catch (Exception e) { return false; }
     }
 
     public boolean updateMenuItemAvailability(String token, String itemId, boolean isAvailable) {
         try {
-            Log.d(TAG, "updateAvailability itemId: " + itemId + " -> " + isAvailable);
             JSONObject payload = new JSONObject().put("is_available", isAvailable);
-            boolean result = patch("/rest/v1/menu_items?id=eq." + itemId, payload.toString(), token);
-            Log.d(TAG, "updateAvailability result: " + result);
-            return result;
-        } catch (Exception e) { Log.e(TAG, "updateMenuItemAvailability error", e); return false; }
+            return patch("/rest/v1/menu_items?id=eq." + itemId, payload.toString(), token);
+        } catch (Exception e) { return false; }
     }
 
     public boolean deleteMenuItem(String token, String itemId) {
@@ -300,16 +357,13 @@ public class SupabaseAuthService {
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Prefer", "return=minimal");
             int code = conn.getResponseCode();
-            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-            Log.d(TAG, "deleteMenuItem: " + code + " " + body);
             return code >= 200 && code < 300;
-        } catch (Exception e) { Log.e(TAG, "deleteMenuItem error", e); return false; }
+        } catch (Exception e) { return false; }
     }
 
     public String uploadImage(String token, String bucket, String path, byte[] data, String mimeType) {
         try {
-            Log.d(TAG, "uploadImage path: " + path + " size: " + (data != null ? data.length : 0));
             URL url = new URL(getBaseUrl() + "/storage/v1/object/" + bucket + "/" + path);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("PUT");
@@ -323,15 +377,12 @@ public class SupabaseAuthService {
                 os.write(data);
             }
             int code = conn.getResponseCode();
-            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
             conn.disconnect();
-
-            Log.d(TAG, "uploadImage response: " + code + " " + body);
 
             if (code >= 200 && code < 300) {
                 return getBaseUrl() + "/storage/v1/object/public/" + bucket + "/" + path;
             }
-        } catch (Exception e) { Log.e(TAG, "uploadImage error", e); }
+        } catch (Exception e) { }
         return null;
     }
 
@@ -372,19 +423,14 @@ public class SupabaseAuthService {
             String mBody = readStream(mCode < 300 ? mConn.getInputStream() : mConn.getErrorStream());
             mConn.disconnect();
             if (mCode >= 200 && mCode < 300) stats.totalItems = new JSONArray(mBody).length();
-        } catch (Exception e) { Log.e(TAG, "getStats error", e); }
+        } catch (Exception e) { }
         return stats;
     }
 
-    // --- HELPERS ---
-
     private boolean patch(String path, String body, String token) throws IOException {
         URL url = new URL(getBaseUrl() + path);
-
-        // Android-compatible PATCH workaround
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         try {
-            // This reflection approach works on Android's okhttp-backed HttpURLConnection
             Object delegate = conn;
             try {
                 java.lang.reflect.Field f = conn.getClass().getDeclaredField("delegate");
@@ -395,9 +441,7 @@ public class SupabaseAuthService {
             java.lang.reflect.Method m = delegate.getClass().getDeclaredMethod("setRequestMethod", String.class);
             m.setAccessible(true);
             m.invoke(delegate, "PATCH");
-        } catch (Exception e) {
-            Log.e(TAG, "PATCH reflection failed: " + e.getMessage());
-        }
+        } catch (Exception e) {}
 
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "application/json");
@@ -408,26 +452,16 @@ public class SupabaseAuthService {
         byte[] bodyBytes = body.getBytes(StandardCharsets.UTF_8);
         conn.setRequestProperty("Content-Length", String.valueOf(bodyBytes.length));
 
-        Log.d(TAG, "=== PATCH REQUEST ===");
-        Log.d(TAG, "URL: " + url);
-        Log.d(TAG, "Body: " + body);
-        Log.d(TAG, "Method: " + conn.getRequestMethod());
-
         try (OutputStream os = conn.getOutputStream()) {
             os.write(bodyBytes);
             os.flush();
         }
 
         int code = conn.getResponseCode();
-        String responseBody = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
         conn.disconnect();
-
-        Log.d(TAG, "=== PATCH RESPONSE ===");
-        Log.d(TAG, "Status: " + code);
-        Log.d(TAG, "Response: " + responseBody);
-
         return code >= 200 && code < 300;
     }
+
     private HttpResponse post(String path, String body, String token) throws IOException {
         URL url = new URL(getBaseUrl() + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -479,11 +513,12 @@ public class SupabaseAuthService {
             conn.setRequestMethod("DELETE");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
-            int code = conn.getResponseCode();
-            Log.d(TAG, "deleteImage: " + code + " path: " + path);
+            conn.getResponseCode();
             conn.disconnect();
-        } catch (Exception e) { Log.e(TAG, "deleteImage error", e); }
+        } catch (Exception e) { }
     }
+
+    // --- ADDED MISSING METHODS FOR ADDRESS AND PASSWORD ---
 
     public BuyerAddress getBuyerAddress(String token, String buyerId) {
         if (token == null || buyerId == null) return null;
@@ -540,21 +575,9 @@ public class SupabaseAuthService {
             }
 
             int code = conn.getResponseCode();
-
-            // Debugging block to catch silent errors
-            if (code < 200 || code >= 300) {
-                String errorBody = readStream(conn.getErrorStream());
-                Log.e(TAG, "SUPABASE REJECTED ADDRESS SAVE! HTTP Code: " + code + " | Reason: " + errorBody);
-                conn.disconnect();
-                return false;
-            }
-
             conn.disconnect();
-            return true;
-        } catch (Exception e) {
-            Log.e(TAG, "saveBuyerAddress Java exception", e);
-            return false;
-        }
+            return code >= 200 && code < 300;
+        } catch (Exception e) { Log.e(TAG, "saveBuyerAddress error", e); return false; }
     }
 
     public boolean updatePassword(String token, String newPassword) {
@@ -576,10 +599,6 @@ public class SupabaseAuthService {
             int code = conn.getResponseCode();
             conn.disconnect();
             return code >= 200 && code < 300;
-        } catch (Exception e) {
-            Log.e(TAG, "updatePassword error", e);
-            return false;
-        }
+        } catch (Exception e) { Log.e(TAG, "updatePassword error", e); return false; }
     }
-
 }

@@ -15,12 +15,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
-import com.example.midtermsexam_beauty.adapters.MenuAdapter; // UPDATED: Using the new Adapter
+import com.example.midtermsexam_beauty.adapters.MenuAdapter;
 import com.example.midtermsexam_beauty.models.MenuItem;
+import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ViewProductDetails extends AppCompatActivity {
     private static final String DEFAULT_SHOP_NAME = "Restaurant Placeholder";
@@ -33,7 +36,6 @@ public class ViewProductDetails extends AppCompatActivity {
     private TextView shopRating;
     private TextView shopSectionNote;
 
-    // Header Buttons for FoodPanda design
     private ImageButton backButton;
     private ImageButton favoriteButton;
     private ImageButton shareButton;
@@ -43,22 +45,15 @@ public class ViewProductDetails extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.product_view_details);
 
-        // 1. Initialize UI bindings
         bindViews();
         styleViews();
-
-        // 2. ACTIVATE THE NAVBAR
-        // This ensures the navigation to Home, Search, and Cart works
         NavbarCard.setupNavbar(this);
 
-        // 3. Load Storefront Data
         ShopPayload payload = readShopPayload();
         bindShopHeader(payload);
 
-        // 4. Initialize the dynamic menu with the NEW Adapter
-        setupMenuGrid(payload.shopName);
+        setupMenuGrid(payload.shopName, payload.sellerId);
 
-        // 5. Setup Action Listeners
         setupClickListeners(payload);
     }
 
@@ -77,14 +72,8 @@ public class ViewProductDetails extends AppCompatActivity {
 
     private void setupClickListeners(ShopPayload payload) {
         backButton.setOnClickListener(v -> finish());
-
-        favoriteButton.setOnClickListener(v ->
-                Toast.makeText(this, "Added " + payload.shopName + " to Favorites!", Toast.LENGTH_SHORT).show()
-        );
-
-        shareButton.setOnClickListener(v ->
-                Toast.makeText(this, "Sharing " + payload.shopName + " storefront...", Toast.LENGTH_SHORT).show()
-        );
+        favoriteButton.setOnClickListener(v -> Toast.makeText(this, "Added " + payload.shopName + " to Favorites!", Toast.LENGTH_SHORT).show());
+        shareButton.setOnClickListener(v -> Toast.makeText(this, "Sharing " + payload.shopName + " storefront...", Toast.LENGTH_SHORT).show());
     }
 
     private void styleViews() {
@@ -97,7 +86,8 @@ public class ViewProductDetails extends AppCompatActivity {
                 intent.getIntExtra("imageId", R.drawable.product_1),
                 intent.getIntExtra("logoImageId", 0),
                 sanitize(intent.getStringExtra("name"), DEFAULT_SHOP_NAME),
-                intent.getFloatExtra("rating", DEFAULT_RATING)
+                intent.getFloatExtra("rating", DEFAULT_RATING),
+                intent.getStringExtra("sellerId")
         );
     }
 
@@ -116,46 +106,32 @@ public class ViewProductDetails extends AppCompatActivity {
             shopLogoImage.setImageResource(payload.logoImageId);
             return;
         }
-
         shopLogoImage.setVisibility(View.GONE);
         shopLogoInitials.setVisibility(View.VISIBLE);
         shopLogoInitials.setText(buildInitials(payload.shopName));
     }
 
-    private void setupMenuGrid(String shopName) {
+    private void setupMenuGrid(String shopName, String sellerId) {
         RecyclerView rvMenu = findViewById(R.id.rv_shop_menu);
         rvMenu.setLayoutManager(new GridLayoutManager(this, 2));
 
-        // Mock Menu Data
-        List<MenuItem> menuItems = new ArrayList<>();
+        if (sellerId == null || sellerId.isEmpty()) {
+            Toast.makeText(this, "Store menu unavailable.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        MenuItem item1 = new MenuItem();
-        item1.setName("Classic Cheeseburger");
-        item1.setDescription("100% Beef with cheese");
-        item1.setPrice(120.00);
-        menuItems.add(item1);
+        SessionManager session = new SessionManager(this);
+        SupabaseAuthService supabase = new SupabaseAuthService();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        MenuItem item2 = new MenuItem();
-        item2.setName("Large Fries");
-        item2.setDescription("Crispy and golden");
-        item2.setPrice(65.00);
-        menuItems.add(item2);
+        executor.execute(() -> {
+            List<MenuItem> items = supabase.getMenuItems(session.getToken(), sellerId);
 
-        MenuItem item3 = new MenuItem();
-        item3.setName("House Iced Tea");
-        item3.setDescription("Refreshing cold drink");
-        item3.setPrice(45.00);
-        menuItems.add(item3);
-
-        MenuItem item4 = new MenuItem();
-        item4.setName("Chicken Nuggets");
-        item4.setDescription("6 pieces with dip");
-        item4.setPrice(95.00);
-        menuItems.add(item4);
-
-        // UPDATED: Now using MenuAdapter with the new item_menu_row layout
-        MenuAdapter adapter = new MenuAdapter(this, menuItems, shopName);
-        rvMenu.setAdapter(adapter);
+            runOnUiThread(() -> {
+                MenuAdapter adapter = new MenuAdapter(ViewProductDetails.this, items, shopName);
+                rvMenu.setAdapter(adapter);
+            });
+        });
     }
 
     private String buildRatingLabel(float rating) {
@@ -170,16 +146,12 @@ public class ViewProductDetails extends AppCompatActivity {
     private String buildInitials(String shopName) {
         String[] parts = shopName.trim().split("\\s+");
         StringBuilder initials = new StringBuilder();
-
         for (String part : parts) {
             if (!part.isEmpty() && Character.isLetterOrDigit(part.charAt(0))) {
                 initials.append(Character.toUpperCase(part.charAt(0)));
             }
-            if (initials.length() == 2) {
-                break;
-            }
+            if (initials.length() == 2) break;
         }
-
         return initials.length() > 0 ? initials.toString() : "ST";
     }
 
@@ -194,12 +166,14 @@ public class ViewProductDetails extends AppCompatActivity {
         private final int logoImageId;
         private final String shopName;
         private final float rating;
+        private final String sellerId;
 
-        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating) {
+        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId) {
             this.coverImageId = coverImageId;
             this.logoImageId = logoImageId;
             this.shopName = shopName;
             this.rating = rating;
+            this.sellerId = sellerId;
         }
     }
 }

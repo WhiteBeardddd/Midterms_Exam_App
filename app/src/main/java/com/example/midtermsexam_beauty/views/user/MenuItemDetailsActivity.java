@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide; // NEW: Import Glide
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.utilities.ProductManager;
@@ -21,6 +22,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
     private String itemName;
     private String itemDesc;
     private String shopName;
+    private String imageUrl; // NEW: To hold the image link
 
     private TextView tvQuantity, tvPrice, tvName, tvDesc;
     private Button btnAddToCart;
@@ -46,8 +48,18 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         itemDesc = getIntent().getStringExtra("item_desc");
         basePrice = getIntent().getDoubleExtra("item_price", 0.0);
         shopName = getIntent().getStringExtra("shop_name");
-        // Fallback to default image for now since we're passing mock data
-        ivImage.setImageResource(R.drawable.product_1);
+        imageUrl = getIntent().getStringExtra("image_url"); // NEW: Get Image URL
+
+        // NEW: Load dynamic image with Glide
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(imageUrl)
+                    .centerCrop()
+                    .placeholder(R.drawable.product_1)
+                    .into(ivImage);
+        } else {
+            ivImage.setImageResource(R.drawable.product_1);
+        }
 
         // Set Initial Text
         tvName.setText(itemName);
@@ -80,7 +92,6 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
     }
 
     private void addToCartAndFinish() {
-        // Create Product mapping
         Product productToAdd = new Product(
                 R.drawable.product_1,
                 itemName,
@@ -92,10 +103,12 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
                 ""
         );
 
-        // Push to local Cart memory
+        // NEW: Attach the dynamic image URL to the cart item
+        productToAdd.setImageUrl(imageUrl);
+
         ProductManager.getInstance().addProduct(productToAdd, currentQuantity);
 
         Toast.makeText(this, "Added " + currentQuantity + " " + itemName + " to cart", Toast.LENGTH_SHORT).show();
-        finish(); // Close this page and go back to the restaurant menu
+        finish();
     }
 }

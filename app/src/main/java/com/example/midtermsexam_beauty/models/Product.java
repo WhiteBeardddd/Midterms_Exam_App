@@ -23,6 +23,8 @@ public class Product {
     private final float rating;
     private final String skinType;
     private int counter;
+    private String sellerId;
+    private String imageUrl; // NEW: To hold the dynamic image from Supabase
 
     public Product(int imageID, String name, String description, float price, String category,
                    boolean availability, float rating, String skinType) {
@@ -37,74 +39,41 @@ public class Product {
         this.counter = 0;
     }
 
-    public int getImageID() {
-        return imageID;
-    }
+    public int getImageID() { return imageID; }
+    public int getImageId() { return imageID; }
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public float getPrice() { return price; }
+    public String getCategory() { return category; }
+    public boolean getAvalability() { return availability; }
+    public boolean isAvailability() { return availability; }
+    public float getRating() { return rating; }
+    public String getSkin_type() { return skinType; }
+    public int getCounter() { return counter; }
+    public void setCounter(int counter) { this.counter = counter; }
 
-    public int getImageId() {
-        return imageID;
-    }
+    public String getSellerId() { return sellerId; }
+    public void setSellerId(String sellerId) { this.sellerId = sellerId; }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public float getPrice() {
-        return price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public boolean getAvalability() {
-        return availability;
-    }
-
-    public boolean isAvailability() {
-        return availability;
-    }
-
-    public float getRating() {
-        return rating;
-    }
-
-    public String getSkin_type() {
-        return skinType;
-    }
-
-    public int getCounter() {
-        return counter;
-    }
-
-    public void setCounter(int counter) {
-        this.counter = counter;
-    }
+    // NEW: Getters and Setters for the Image URL
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     private static List<Product> loadMealsFromJSON(Context context, String fileName, String key) {
         List<Product> productList = new ArrayList<>();
-
         try {
             InputStream writer = context.getAssets().open(fileName);
             int size = writer.available();
             byte[] buffer = new byte[size];
-
             writer.read(buffer);
             writer.close();
-
             String json = new String(buffer, StandardCharsets.UTF_8);
             JSONObject jsonObject = new JSONObject(json);
             JSONArray mealsArray = jsonObject.getJSONArray(key);
-
             Resources res = context.getResources();
 
             for (int i = 0; i < mealsArray.length(); i++) {
                 JSONObject obj = mealsArray.getJSONObject(i);
-
                 int imageID = res.getIdentifier(obj.getString("imageID"), "drawable", context.getPackageName());
                 String name = obj.getString("name");
                 float price = (float) obj.getDouble("price");
@@ -114,23 +83,9 @@ public class Product {
                 float rating = (float) obj.optDouble("rating", availability ? 4.8 : 4.2);
                 String skinType = obj.optString("skin_type", availability ? "Available now" : "Unavailable");
 
-                Product addProduct = new Product(
-                        imageID,
-                        name,
-                        description,
-                        price,
-                        category,
-                        availability,
-                        rating,
-                        skinType
-                );
-                productList.add(addProduct);
+                productList.add(new Product(imageID, name, description, price, category, availability, rating, skinType));
             }
-
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-
+        } catch (IOException | JSONException e) { e.printStackTrace(); }
         return productList;
     }
 

@@ -5,10 +5,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import android.widget.BaseAdapter;
+import com.bumptech.glide.Glide; // NEW: Import Glide
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Product;
 
@@ -52,7 +53,18 @@ public class CheckOutCard extends BaseAdapter {
         }
 
         Product product = productList.get(position);
-        holder.productImage.setImageResource(product.getImageId());
+
+        // NEW: Load the image using Glide if a URL exists
+        if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+            Glide.with(parent.getContext())
+                    .load(product.getImageUrl())
+                    .centerCrop()
+                    .placeholder(R.drawable.product_1)
+                    .into(holder.productImage);
+        } else {
+            holder.productImage.setImageResource(product.getImageId());
+        }
+
         holder.productName.setText(product.getName());
         holder.productPrice.setText(String.format("₱ %.2f", product.getPrice()));
         holder.productQuantity.setText("Quantity: " + product.getCounter());

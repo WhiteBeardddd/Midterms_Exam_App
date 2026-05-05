@@ -11,13 +11,19 @@ import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.PopularAndFeaturedAdapter;
 import com.example.midtermsexam_beauty.models.Product;
+import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class FeaturedProducts extends AppCompatActivity {
 
     private final ArrayList<Product> featuredProducts = new ArrayList<>();
     private ImageButton toPrevious;
+    private PopularAndFeaturedAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,16 +35,34 @@ public class FeaturedProducts extends AppCompatActivity {
         toPrevious = findViewById(R.id.back_btn);
         ListView featuredListView = findViewById(R.id.featured_recycler);
 
-        featuredProducts.addAll(Product.getMeals(this, "bestSellers"));
-
-        PopularAndFeaturedAdapter adapter = new PopularAndFeaturedAdapter(this, featuredProducts);
+        // Initialize adapter with empty list first
+        adapter = new PopularAndFeaturedAdapter(this, featuredProducts);
         featuredListView.setAdapter(adapter);
+
         featuredListView.setOnItemClickListener((parent, view, position, id) -> {
             Product product = featuredProducts.get(position);
             openProductDetails(product);
         });
 
         toPrevious.setOnClickListener(view -> finish());
+
+        // Fetch dynamic shops from backend
+        fetchDynamicShops();
+    }
+
+    private void fetchDynamicShops() {
+        SessionManager session = new SessionManager(this);
+        SupabaseAuthService supabase = new SupabaseAuthService();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            List<Product> dynamicShops = supabase.getAllShops(session.getToken());
+            runOnUiThread(() -> {
+                featuredProducts.clear();
+                featuredProducts.addAll(dynamicShops);
+                adapter.notifyDataSetChanged();
+            });
+        });
     }
 
     private void openProductDetails(Product product) {
@@ -51,6 +75,10 @@ public class FeaturedProducts extends AppCompatActivity {
         intent.putExtra("category", product.getCategory());
         intent.putExtra("skin_type", product.getSkin_type());
         intent.putExtra("availability", product.getAvalability());
+
+        // CRITICAL: Pass the seller ID so the details page knows whose menu to fetch
+        intent.putExtra("sellerId", product.getSellerId());
+
         startActivity(intent);
     }
 }

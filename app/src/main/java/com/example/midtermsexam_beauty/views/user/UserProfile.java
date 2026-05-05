@@ -27,9 +27,10 @@ import java.util.concurrent.Executors;
 
 public class UserProfile extends AppCompatActivity {
 
-    private EditText etFullName, etPhone;
+    private EditText etFullName, etPhone, etStoreName;
+    private LinearLayout layoutStoreName;
     private SwitchMaterial switchIsSeller;
-    private ImageButton settingBtn, favBtn, addressBtn;
+    private ImageButton settingBtn, orderBtn, favBtn, addressBtn;
     private Button btnSave, btnLogout;
     private SessionManager session;
     private SupabaseAuthService authService;
@@ -53,29 +54,28 @@ public class UserProfile extends AppCompatActivity {
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
         switchIsSeller = findViewById(R.id.switchIsSeller);
+
+        layoutStoreName = findViewById(R.id.layoutStoreName);
+        etStoreName = findViewById(R.id.etStoreName);
+
         settingBtn = findViewById(R.id.settings_btn);
+        orderBtn = findViewById(R.id.order_btn);
         favBtn = findViewById(R.id.fav_btn);
         addressBtn = findViewById(R.id.address_btn);
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
+        // Toggle Store Name visibility based on the Seller Switch
+        switchIsSeller.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            layoutStoreName.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+        });
+
         loadProfile();
 
-        // Opens the Settings Activity
-        settingBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-        });
-
-        favBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show()
-        );
-
-        // UPDATED: Now opens the Address Activity
-        addressBtn.setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddressActivity.class);
-            startActivity(intent);
-        });
+        settingBtn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
+        orderBtn.setOnClickListener(v -> Toast.makeText(this, "Order Lists", Toast.LENGTH_SHORT).show());
+        favBtn.setOnClickListener(v -> Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show());
+        addressBtn.setOnClickListener(v -> startActivity(new Intent(this, AddressActivity.class)));
 
         btnSave.setOnClickListener(v -> saveProfile());
         btnLogout.setOnClickListener(v -> AppNavigator.logout(this, session));
@@ -86,14 +86,24 @@ public class UserProfile extends AppCompatActivity {
 
     private void loadProfile() {
         executor.execute(() -> {
-            Profile profile = authService.getProfile(
-                    session.getToken(),
-                    session.getUserId()
-            );
+            Profile profile = authService.getProfile(session.getToken(), session.getUserId());
+            String storeName = "";
+
+            if (profile != null && profile.getId() != null) {
+                // Fetch the store name regardless of current Seller Mode status
+                storeName = authService.getStoreName(session.getToken(), profile.getId());
+            }
+
+            String finalStoreName = storeName;
             if (profile != null) {
                 runOnUiThread(() -> {
                     etFullName.setText(profile.getFullName());
                     etPhone.setText(profile.getPhone());
+
+                    // Pre-fill the text field so it's ready when the switch is toggled
+                    etStoreName.setText(finalStoreName);
+
+                    // This will automatically trigger the visibility logic
                     switchIsSeller.setChecked(profile.isSeller());
                 });
             }
@@ -104,6 +114,7 @@ public class UserProfile extends AppCompatActivity {
         String fullName = etFullName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         boolean isSeller = switchIsSeller.isChecked();
+        String storeName = etStoreName.getText().toString().trim();
 
         if (session.getToken() == null || session.getUserId() == null) {
             Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
@@ -117,26 +128,29 @@ public class UserProfile extends AppCompatActivity {
             return;
         }
 
+        if (isSeller && storeName.isEmpty()) {
+            etStoreName.setError("Store Name is required");
+            etStoreName.requestFocus();
+            return;
+        }
+
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            boolean success = authService.updateProfile(
-                    session.getToken(),
-                    session.getUserId(),
-                    fullName,
-                    phone,
-                    isSeller
-            );
+            boolean profileSuccess = authService.updateProfile(session.getToken(), session.getUserId(), fullName, phone, isSeller);
+            boolean storeSuccess = true;
+
+            if (isSeller && profileSuccess) {
+                storeSuccess = authService.saveStoreName(session.getToken(), session.getProfileId(), storeName);
+            }
+
+            boolean finalSuccess = profileSuccess && storeSuccess;
 
             runOnUiThread(() -> {
                 btnSave.setEnabled(true);
-                if (success) {
+                if (finalSuccess) {
                     session.setIsSeller(isSeller);
                     Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show();
-                    if (isSeller) {
-                        startActivity(new Intent(this, SellerDashboard.class));
-                    } else {
-                        startActivity(new Intent(this, Homepage.class));
-                    }
+                    startActivity(new Intent(this, isSeller ? SellerDashboard.class : Homepage.class));
                     finish();
                 } else {
                     Toast.makeText(this, "Failed to update profile.", Toast.LENGTH_SHORT).show();
@@ -155,7 +169,6 @@ public class UserProfile extends AppCompatActivity {
         LinearLayout header = findViewById(headerId);
         LinearLayout content = findViewById(contentId);
         ImageView arrow = findViewById(arrowId);
-
         header.setOnClickListener(v -> {
             if (content.getVisibility() == View.GONE) {
                 content.setVisibility(View.VISIBLE);

@@ -14,9 +14,13 @@ import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.ProductCard;
 import com.example.midtermsexam_beauty.adapters.RestaurantFeedAdapter;
 import com.example.midtermsexam_beauty.models.Product;
+import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Homepage extends AppCompatActivity {
 
@@ -32,11 +36,8 @@ public class Homepage extends AppCompatActivity {
         NavbarCard.setupNavbar(this);
 
         List<Product> featuredProducts = getStaticFeaturedShops();
-        List<Product> popularProducts = Product.getMeals(this, "popular");
 
         ProductCard.OnItemClickListener listener = product -> {
-            Toast.makeText(this, "Clicked: " + product.getName(), Toast.LENGTH_SHORT).show();
-
             Intent intent = new Intent(this, ViewProductDetails.class);
             intent.putExtra("imageId", product.getImageID());
             intent.putExtra("name", product.getName());
@@ -46,19 +47,26 @@ public class Homepage extends AppCompatActivity {
             intent.putExtra("category", product.getCategory());
             intent.putExtra("skin_type", product.getSkin_type());
             intent.putExtra("availability", product.getAvalability());
+            intent.putExtra("sellerId", product.getSellerId());
             startActivity(intent);
         };
 
         ProductCard featuredAdapter = new ProductCard(this, featuredProducts, listener);
-        RestaurantFeedAdapter popularAdapter = new RestaurantFeedAdapter(this, popularProducts, listener);
-
-        featuredListView.setLayoutManager(
-                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        );
+        featuredListView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        featuredListView.setAdapter(featuredAdapter);
         popularListView.setLayoutManager(new LinearLayoutManager(this));
 
-        featuredListView.setAdapter(featuredAdapter);
-        popularListView.setAdapter(popularAdapter);
+        SessionManager session = new SessionManager(this);
+        SupabaseAuthService supabase = new SupabaseAuthService();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+            List<Product> dynamicShops = supabase.getAllShops(session.getToken());
+            runOnUiThread(() -> {
+                RestaurantFeedAdapter popularAdapter = new RestaurantFeedAdapter(this, dynamicShops, listener);
+                popularListView.setAdapter(popularAdapter);
+            });
+        });
 
         searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
@@ -70,46 +78,10 @@ public class Homepage extends AppCompatActivity {
 
     private List<Product> getStaticFeaturedShops() {
         List<Product> shops = new ArrayList<>();
-        shops.add(new Product(
-                R.drawable.product_1,
-                "Minute Burger",
-                "Quick burgers and budget-friendly bites that are easy to grab anytime.",
-                99.00f,
-                "Fast Food",
-                true,
-                4.8f,
-                "Always featured"
-        ));
-        shops.add(new Product(
-                R.drawable.product_2,
-                "Jollibee",
-                "Well-known comfort food with crowd favorites and familiar combo meals.",
-                149.00f,
-                "Chicken & Rice",
-                true,
-                4.9f,
-                "Always featured"
-        ));
-        shops.add(new Product(
-                R.drawable.product_3,
-                "McDonalds",
-                "Reliable fast-food staples with burgers, fries, and drinks users already know.",
-                139.00f,
-                "Burgers",
-                true,
-                4.7f,
-                "Always featured"
-        ));
-        shops.add(new Product(
-                R.drawable.product_4,
-                "KFC",
-                "Crispy chicken meals and box deals that fit the featured restaurant lane well.",
-                179.00f,
-                "Fried Chicken",
-                true,
-                4.8f,
-                "Always featured"
-        ));
+        shops.add(new Product(R.drawable.product_1, "Minute Burger", "Quick burgers and budget-friendly bites.", 99.00f, "Fast Food", true, 4.8f, "All"));
+        shops.add(new Product(R.drawable.product_2, "Jollibee", "Comfort food with crowd favorites.", 149.00f, "Chicken & Rice", true, 4.9f, "All"));
+        shops.add(new Product(R.drawable.product_3, "McDonalds", "Reliable fast-food staples.", 139.00f, "Burgers", true, 4.7f, "All"));
+        shops.add(new Product(R.drawable.product_4, "KFC", "Crispy chicken meals and box deals.", 179.00f, "Fried Chicken", true, 4.8f, "All"));
         return shops;
     }
 }
