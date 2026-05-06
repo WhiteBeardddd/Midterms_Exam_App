@@ -263,25 +263,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingStart="32dp"
-                        android:paddingBottom="10dp"
                         android:visibility="gone">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="10dp"
-                            android:text="Contact us"
-                            android:textColor="@color/text_secondary"
-                            tools:ignore="HardcodedText" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="10dp"
-                            android:text="FAQs"
-                            android:textColor="@color/text_secondary"
-                            tools:ignore="HardcodedText" />
+                        <include layout="@layout/dropdown_support"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -314,25 +298,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:paddingStart="32dp"
-                        android:paddingBottom="10dp"
                         android:visibility="gone">
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="10dp"
-                            android:text="Privacy Policy"
-                            android:textColor="@color/text_secondary"
-                            tools:ignore="HardcodedText" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="10dp"
-                            android:text="User Agreement"
-                            android:textColor="@color/text_secondary"
-                            tools:ignore="HardcodedText" />
+                        <include layout="@layout/dropdown_terms"/>
                     </LinearLayout>
 
                 </LinearLayout>
