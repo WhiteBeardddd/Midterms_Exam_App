@@ -8,7 +8,11 @@ import com.example.midtermsexam_beauty.models.BuyerAddress;
 import com.example.midtermsexam_beauty.models.MenuItem;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.models.Profile;
+import com.example.midtermsexam_beauty.models.Order;
 import com.example.midtermsexam_beauty.R;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -60,6 +65,74 @@ public class SupabaseAuthService {
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
+    // --- FULLY UPDATED ORDER METHOD ---
+    public boolean placeOrder(String token, String buyerId, String sellerId, String buyerAddressId, double totalAmount, String address) {
+        try {
+            JSONObject orderPayload = new JSONObject();
+            orderPayload.put("buyer_id", buyerId);
+            orderPayload.put("total_amount", totalAmount);
+            orderPayload.put("status", "pending");
+            orderPayload.put("address", address != null ? address : "Default Delivery Address");
+
+            if (sellerId != null && !sellerId.isEmpty()) {
+                orderPayload.put("seller_id", sellerId);
+            }
+            if (buyerAddressId != null && !buyerAddressId.isEmpty()) {
+                orderPayload.put("buyer_address_id", buyerAddressId);
+            }
+
+            URL url = new URL(getBaseUrl() + "/rest/v1/orders");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = orderPayload.toString().getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int code = conn.getResponseCode();
+            if (code >= 300) {
+                String errorBody = readStream(conn.getErrorStream());
+                Log.e(TAG, "Failed to place order. HTTP Code: " + code + ", Error: " + errorBody);
+                conn.disconnect();
+                return false;
+            }
+            conn.disconnect();
+            return true;
+        } catch (Exception e) {
+            Log.e(TAG, "placeOrder network error", e);
+        }
+        return false;
+    }
+
+    public List<Order> getBuyerOrders(String token, String buyerId) {
+        List<Order> orders = new ArrayList<>();
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/orders?buyer_id=eq." + buyerId + "&select=*&order=created_at.desc");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+            if (code == 200) {
+                String responseBody = readStream(conn.getInputStream());
+                Gson gson = new Gson();
+                Type listType = new TypeToken<List<Order>>(){}.getType();
+                orders = gson.fromJson(responseBody, listType);
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+            Log.e(TAG, "getBuyerOrders error", e);
+        }
+        return orders;
+    }
+
+    // --- OTHER METHODS ---
     public AuthResult signUp(String email, String password, String username) {
         try {
             JSONObject payload = new JSONObject()
@@ -108,7 +181,6 @@ public class SupabaseAuthService {
                     p.setPhone(obj.optString("phone"));
                     p.setSeller(obj.optBoolean("is_seller"));
                     p.setAvatarUrl(obj.optString("avatar_url", ""));
-
                     return p;
                 }
             }
@@ -770,15 +842,9 @@ public class SupabaseAuthService {
         return "";
     }
 
-    /**
-     * Upserts the seller's shop address into the seller_profiles table.
-     * Mirrors saveStoreName() — checks for an existing row first, then
-     * PATCHes or POSTs accordingly.
-     */
     public boolean saveAddress(String token, String profileId, String address) {
         if (token == null || profileId == null) return false;
         try {
-            // 1. Check whether a seller_profiles row already exists
             URL checkUrl = new URL(getBaseUrl()
                     + "/rest/v1/seller_profiles?profile_id=eq." + profileId
                     + "&select=id");
@@ -793,18 +859,15 @@ public class SupabaseAuthService {
 
             JSONArray arr = new JSONArray(checkBody);
 
-            // 2. Build payload (only the address column — avoids overwriting store_name)
             JSONObject payload = new JSONObject()
                     .put("profile_id", profileId)
                     .put("address", address != null ? address : "");
 
             if (arr.length() > 0) {
-                // Row exists → PATCH
                 String existingId = arr.getJSONObject(0).getString("id");
                 return patch("/rest/v1/seller_profiles?id=eq." + existingId,
                         payload.toString(), token);
             } else {
-                // No row yet → POST (create with sensible defaults)
                 payload.put("is_open", true);
                 HttpResponse res = post("/rest/v1/seller_profiles",
                         payload.toString(), token);
@@ -837,7 +900,6 @@ public class SupabaseAuthService {
     public boolean saveShopBackground(String token, String profileId, String backgroundUrl) {
         if (token == null || profileId == null) return false;
         try {
-            // Reuse the same upsert pattern as saveStoreName/saveAddress
             URL checkUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
             HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
             checkConn.setRequestMethod("GET");
