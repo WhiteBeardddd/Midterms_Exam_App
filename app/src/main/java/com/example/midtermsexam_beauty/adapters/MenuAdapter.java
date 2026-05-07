@@ -63,6 +63,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             intent.putExtra("shop_name", shopName);
             intent.putExtra("image_url", item.getImageUrl());
             intent.putExtra("seller_id", item.getSellerId()); // Pass seller ID
+            intent.putExtra("item_id", item.getId());
             context.startActivity(intent);
         });
     }

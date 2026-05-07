@@ -132,11 +132,18 @@ public class Checkout extends AppCompatActivity {
 
         executor.execute(() -> {
             Map<String, Double> subtotalsBySeller = new HashMap<>();
+            Map<String, List<Product>> itemsBySeller = new HashMap<>();
 
             for (Product product : productList) {
                 String sId = product.getSellerId() != null ? product.getSellerId() : "UNKNOWN";
                 double itemTotal = product.getPrice() * product.getCounter();
+
                 subtotalsBySeller.put(sId, subtotalsBySeller.getOrDefault(sId, 0.0) + itemTotal);
+
+                if (!itemsBySeller.containsKey(sId)) {
+                    itemsBySeller.put(sId, new ArrayList<>());
+                }
+                itemsBySeller.get(sId).add(product);
             }
 
             String addressId = userAddress.getId();
@@ -149,7 +156,7 @@ public class Checkout extends AppCompatActivity {
                 double shopSubtotal = entry.getValue();
                 double shopTotal = shopSubtotal + deliveryFee;
 
-                boolean success = authService.placeOrder(
+                String newOrderId = authService.placeOrder(
                         sessionManager.getToken(),
                         sessionManager.getProfileId(),
                         currentSellerId,
@@ -158,7 +165,13 @@ public class Checkout extends AppCompatActivity {
                         fullAddressString
                 );
 
-                if (!success) {
+                if (newOrderId != null) {
+                    List<Product> shopItems = itemsBySeller.get(entry.getKey());
+                    boolean itemsSaved = authService.addOrderItems(sessionManager.getToken(), newOrderId, shopItems);
+                    if (!itemsSaved) {
+                        allSuccess = false;
+                    }
+                } else {
                     allSuccess = false;
                 }
             }
@@ -174,7 +187,7 @@ public class Checkout extends AppCompatActivity {
                     updateTotalPrice();
                     finish();
                 } else {
-                    Toast.makeText(this, "Failed to place some orders. Check Logcat!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Failed to place some items. Check Logcat!", Toast.LENGTH_LONG).show();
                 }
             });
         });

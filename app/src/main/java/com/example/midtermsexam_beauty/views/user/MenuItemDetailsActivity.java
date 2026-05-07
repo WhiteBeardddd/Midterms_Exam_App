@@ -24,6 +24,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
     private String shopName;
     private String imageUrl;
     private String sellerId;
+    private String itemId; // NEW: The specific Item ID!
 
     private TextView tvQuantity, tvPrice, tvName, tvDesc;
     private Button btnAddToCart;
@@ -40,18 +41,17 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         btnAddToCart = findViewById(R.id.btn_add_to_cart);
         ImageView itemImage = findViewById(R.id.item_image);
 
-        // FIXED: These now match your XML file exactly!
         tvName = findViewById(R.id.item_name);
         tvDesc = findViewById(R.id.item_description);
         tvPrice = findViewById(R.id.item_price);
 
-        // Fetch all data passed from the menu lists
         itemName = getIntent().getStringExtra("item_name");
         itemDesc = getIntent().getStringExtra("item_desc");
         basePrice = getIntent().getDoubleExtra("item_price", 0.0);
         shopName = getIntent().getStringExtra("shop_name");
         imageUrl = getIntent().getStringExtra("image_url");
         sellerId = getIntent().getStringExtra("seller_id");
+        itemId = getIntent().getStringExtra("item_id"); // Catch the ID!
 
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this).load(imageUrl).into(itemImage);
@@ -101,6 +101,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
 
         productToAdd.setImageUrl(imageUrl);
         productToAdd.setSellerId(sellerId);
+        productToAdd.setId(itemId); // Attach the Database ID!
 
         ProductManager.getInstance().addProduct(productToAdd, currentQuantity);
 

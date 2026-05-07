@@ -38,6 +38,7 @@
         <activity android:name=".views.user.SettingsActivity" android:exported="false" />
         <activity android:name=".views.user.ViewShopActivity" android:exported="false" />
         <activity android:name=".views.user.MenuItemDetailsActivity" />
+        <activity android:name=".views.user.MyOrdersActivity" android:exported="false" />
         <!-- Seller Activities -->
         <activity android:name=".views.seller.SellerDashboard" android:exported="false" />
         <activity android:name=".views.seller.SellerMenu" android:exported="false" />

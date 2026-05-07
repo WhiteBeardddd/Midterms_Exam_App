@@ -15,9 +15,17 @@ import java.util.Locale;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> {
     private List<Order> orders;
+    private OnOrderClickListener listener;
 
-    public OrderAdapter(List<Order> orders) {
+    // 1. Create an interface for the click listener
+    public interface OnOrderClickListener {
+        void onOrderClick(Order order);
+    }
+
+    // 2. Updated constructor that accepts BOTH the list and the listener
+    public OrderAdapter(List<Order> orders, OnOrderClickListener listener) {
         this.orders = orders;
+        this.listener = listener;
     }
 
     @NonNull
@@ -31,7 +39,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Order order = orders.get(position);
 
-        // Safely substring the UUID for a shorter display string
         String shortId = order.getId() != null && order.getId().length() >= 8
                 ? order.getId().substring(0, 8).toUpperCase()
                 : "N/A";
@@ -45,6 +52,13 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
         } else {
             holder.tvOrderDate.setText("Placed recently");
         }
+
+        // 3. Trigger the listener when the row is clicked!
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onOrderClick(order);
+            }
+        });
     }
 
     @Override

@@ -66,7 +66,8 @@ public class SupabaseAuthService {
     }
 
     // --- FULLY UPDATED ORDER METHOD ---
-    public boolean placeOrder(String token, String buyerId, String sellerId, String buyerAddressId, double totalAmount, String address) {
+    // --- FULLY UPDATED ORDER METHOD ---
+    public String placeOrder(String token, String buyerId, String sellerId, String buyerAddressId, double totalAmount, String address) {
         try {
             JSONObject orderPayload = new JSONObject();
             orderPayload.put("buyer_id", buyerId);
@@ -87,6 +88,10 @@ public class SupabaseAuthService {
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
             conn.setRequestProperty("Authorization", "Bearer " + token);
             conn.setRequestProperty("Content-Type", "application/json");
+
+            // IMPORTANT: This tells Supabase to return the newly created row!
+            conn.setRequestProperty("Prefer", "return=representation");
+
             conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -95,20 +100,72 @@ public class SupabaseAuthService {
             }
 
             int code = conn.getResponseCode();
-            if (code >= 300) {
-                String errorBody = readStream(conn.getErrorStream());
-                Log.e(TAG, "Failed to place order. HTTP Code: " + code + ", Error: " + errorBody);
+            if (code >= 200 && code < 300) {
+                String body = readStream(conn.getInputStream());
+                JSONArray arr = new JSONArray(body);
                 conn.disconnect();
+                if (arr.length() > 0) {
+                    return arr.getJSONObject(0).getString("id"); // Return the Order UUID
+                } else {
+                    // THE TRAP: If Supabase hides the data, print this error!
+                    Log.e(TAG, "CRITICAL: Order inserted, but Supabase returned a blank array! Your SELECT policy on the 'orders' table is blocking the buyer from seeing their own order.");
+                }
+            } else {
+                Log.e(TAG, "Failed order: " + readStream(conn.getErrorStream()));
+            }
+            conn.disconnect();
+        } catch (Exception e) {
+            Log.e(TAG, "placeOrder error", e);
+        }
+        return null;
+    }
+
+    public boolean addOrderItems(String token, String orderId, List<Product> items) {
+        try {
+            JSONArray payload = new JSONArray();
+            for (Product p : items) {
+                // Ensure the item has a valid UUID (prevents crashes from dummy data)
+                if (p.getId() != null && p.getId().length() > 20) {
+                    JSONObject itemObj = new JSONObject();
+                    itemObj.put("order_id", orderId);
+                    itemObj.put("menu_item_id", p.getId());
+                    itemObj.put("quantity", p.getCounter());
+                    itemObj.put("unit_price", p.getPrice());
+                    payload.put(itemObj);
+                }
+            }
+
+            if (payload.length() == 0) {
+                // Add this log so you can see if the Cart IDs are broken
+                Log.e(TAG, "SKIPPED: No valid Item IDs found in the cart! Are you using Dummy Data?");
+                return true;
+            } // Nothing valid to insert
+
+            URL url = new URL(getBaseUrl() + "/rest/v1/order_items");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+
+            int code = conn.getResponseCode();
+            if (code >= 300) {
+                Log.e(TAG, "Failed order items: " + readStream(conn.getErrorStream()));
                 return false;
             }
             conn.disconnect();
             return true;
         } catch (Exception e) {
-            Log.e(TAG, "placeOrder network error", e);
+            Log.e(TAG, "addOrderItems error", e);
         }
         return false;
     }
-
     public List<Order> getBuyerOrders(String token, String buyerId) {
         List<Order> orders = new ArrayList<>();
         try {
@@ -384,6 +441,11 @@ public class SupabaseAuthService {
                             shopName
                     );
                     product.setSellerId(obj.getString("seller_id"));
+
+                    // THIS IS THE CRITICAL LINE THAT WAS MISSING!
+                    // This pulls the UUID so the cart knows it's real data.
+                    product.setId(obj.getString("id"));
+
                     product.setImageUrl(obj.optString("image_url", ""));
                     product.setShopName(shopName);
                     items.add(product);
@@ -464,6 +526,7 @@ public class SupabaseAuthService {
                     );
 
                     product.setSellerId(obj.getString("seller_id"));
+                    product.setId(obj.getString("id")); //DEBUG
                     product.setImageUrl(obj.optString("image_url", ""));
                     product.setShopName(shopName);
 
