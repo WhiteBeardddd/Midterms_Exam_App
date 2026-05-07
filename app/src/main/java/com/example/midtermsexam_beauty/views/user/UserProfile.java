@@ -1,5 +1,6 @@
 package com.example.midtermsexam_beauty.views.user;
 
+import android.widget.ScrollView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,10 +12,14 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
+import com.example.midtermsexam_beauty.adapters.OrderAdapter;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
+import com.example.midtermsexam_beauty.models.Order;
 import com.example.midtermsexam_beauty.models.Profile;
 import com.example.midtermsexam_beauty.utilities.AppNavigator;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
@@ -22,6 +27,8 @@ import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 import com.example.midtermsexam_beauty.views.seller.SellerDashboard;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,6 +43,11 @@ public class UserProfile extends AppCompatActivity {
     private SessionManager session;
     private SupabaseAuthService authService;
     private ExecutorService executor;
+
+    // Order View Variables
+    private RecyclerView rvUserOrders;
+    private OrderAdapter orderAdapter;
+    private List<Order> orderList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,13 +78,27 @@ public class UserProfile extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
-        // Removed: toggle listener that revealed/hid the store name field.
-        // layoutStoreName visibility is now handled solely by loadProfile().
+        // Initialize Orders RecyclerView
+        rvUserOrders = findViewById(R.id.rvUserOrders);
+        rvUserOrders.setLayoutManager(new LinearLayoutManager(this));
+        orderAdapter = new OrderAdapter(orderList);
+        rvUserOrders.setAdapter(orderAdapter);
 
         loadProfile();
+        fetchMyOrders(); // Fetch the orders immediately
 
         settingBtn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
-        orderBtn.setOnClickListener(v -> Toast.makeText(this, "Order Lists", Toast.LENGTH_SHORT).show());
+
+        // Remove toast and scroll directly to orders as requested
+        orderBtn.setOnClickListener(v -> {
+            ScrollView scrollView = findViewById(R.id.main).findViewById(R.id.rvUserOrders).getParent().getParent() instanceof ScrollView
+                    ? (ScrollView) findViewById(R.id.main).findViewById(R.id.rvUserOrders).getParent().getParent()
+                    : null;
+            if (scrollView != null) {
+                scrollView.smoothScrollTo(0, rvUserOrders.getBottom());
+            }
+        });
+
         favBtn.setOnClickListener(v -> Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show());
         addressBtn.setOnClickListener(v -> startActivity(new Intent(this, AddressActivity.class)));
 
@@ -81,6 +107,19 @@ public class UserProfile extends AppCompatActivity {
 
         setupDropdown(R.id.headerSupport, R.id.contentSupport, R.id.arrowSupport);
         setupDropdown(R.id.headerTerms, R.id.contentTerms, R.id.arrowTerms);
+    }
+
+    private void fetchMyOrders() {
+        if (session.getToken() == null || session.getProfileId() == null) return;
+
+        executor.execute(() -> {
+            List<Order> fetchedOrders = authService.getBuyerOrders(session.getToken(), session.getProfileId());
+            runOnUiThread(() -> {
+                orderList.clear();
+                orderList.addAll(fetchedOrders);
+                orderAdapter.notifyDataSetChanged();
+            });
+        });
     }
 
     private void loadProfile() {

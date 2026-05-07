@@ -18,13 +18,13 @@ import com.example.midtermsexam_beauty.models.MenuItem;
 import com.example.midtermsexam_beauty.views.user.MenuItemDetailsActivity;
 
 import java.util.List;
+import java.util.Locale;
 
 public class ShopMenuAdapter extends RecyclerView.Adapter<ShopMenuAdapter.ViewHolder> {
     private final Context context;
     private final List<MenuItem> menuItems;
-    private final String shopName; // Added to pass to the Details screen
+    private final String shopName;
 
-    // Updated constructor to receive the shopName instead of a click listener
     public ShopMenuAdapter(Context context, List<MenuItem> menuItems, String shopName) {
         this.context = context;
         this.menuItems = menuItems;
@@ -34,7 +34,6 @@ public class ShopMenuAdapter extends RecyclerView.Adapter<ShopMenuAdapter.ViewHo
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Using old_product_card_adapter layout which contains the exact IDs needed
         View view = LayoutInflater.from(context).inflate(R.layout.old_product_card_adapter, parent, false);
         return new ViewHolder(view);
     }
@@ -44,31 +43,29 @@ public class ShopMenuAdapter extends RecyclerView.Adapter<ShopMenuAdapter.ViewHo
         MenuItem item = menuItems.get(position);
 
         holder.tvName.setText(item.getName());
-        holder.tvPrice.setText(String.format("₱%.2f", item.getPrice()));
-
-        if (item.getDescription() != null && !item.getDescription().isEmpty()) {
-            holder.tvDesc.setText(item.getDescription());
-            holder.tvDesc.setVisibility(View.VISIBLE);
-        } else {
-            holder.tvDesc.setVisibility(View.GONE);
-        }
+        holder.tvDesc.setText(item.getDescription() != null ? item.getDescription() : "");
+        holder.tvPrice.setText(String.format(Locale.US, "₱%.2f", item.getPrice()));
 
         if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
-            Glide.with(context).load(item.getImageUrl()).into(holder.ivImage);
+            Glide.with(context)
+                    .load(item.getImageUrl())
+                    .centerCrop()
+                    .placeholder(R.drawable.product_1)
+                    .into(holder.ivImage);
         } else {
-            holder.ivImage.setImageResource(R.drawable.product_1); // Fallback
+            holder.ivImage.setImageResource(R.drawable.product_1);
         }
 
-        // 1. Hide the old tiny Add to Cart button
         holder.btnAdd.setVisibility(View.GONE);
 
-        // 2. Make the ENTIRE card clickable to open the new Details screen
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, MenuItemDetailsActivity.class);
             intent.putExtra("item_name", item.getName());
             intent.putExtra("item_desc", item.getDescription());
             intent.putExtra("item_price", item.getPrice());
             intent.putExtra("shop_name", shopName);
+            intent.putExtra("image_url", item.getImageUrl());
+            intent.putExtra("seller_id", item.getSellerId()); // Pass seller ID
             context.startActivity(intent);
         });
     }
@@ -85,7 +82,6 @@ public class ShopMenuAdapter extends RecyclerView.Adapter<ShopMenuAdapter.ViewHo
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            // MATCHED to the exact IDs in old_product_card_adapter.xml
             ivImage = itemView.findViewById(R.id.display_image);
             tvName = itemView.findViewById(R.id.product_name);
             tvDesc = itemView.findViewById(R.id.product_description);
