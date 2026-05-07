@@ -2,8 +2,10 @@ package com.example.midtermsexam_beauty.views.user;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageButton;
+import android.text.Editable;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.text.TextWatcher;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,8 +24,8 @@ import java.util.concurrent.Executors;
 public class PopularProducts extends AppCompatActivity {
 
     private final ArrayList<Product> popularProducts = new ArrayList<>();
-    private ImageButton toPrevious;
     private PopularAndFeaturedAdapter popularAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,7 @@ public class PopularProducts extends AppCompatActivity {
         NavbarCard.setupNavbar(this);
 
         ListView popularListView = findViewById(R.id.popular_recycler);
+        EditText searchBar = findViewById(R.id.searchEditText);
 
         popularAdapter = new PopularAndFeaturedAdapter(this, popularProducts);
         popularListView.setAdapter(popularAdapter);
@@ -42,10 +45,31 @@ public class PopularProducts extends AppCompatActivity {
             openProductDetails(product);
         });
 
-        toPrevious = findViewById(R.id.back_btn);
-        toPrevious.setOnClickListener(view -> finish());
-
         fetchDynamicMenuItems();
+
+        searchBar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                String query = s.toString().trim();
+
+                if (query.isEmpty()) {
+                    fetchDynamicMenuItems();
+                } else {
+                    searchProducts(query);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
     }
 
     private void fetchDynamicMenuItems() {
@@ -58,6 +82,28 @@ public class PopularProducts extends AppCompatActivity {
             runOnUiThread(() -> {
                 popularProducts.clear();
                 popularProducts.addAll(dynamicItems);
+                popularAdapter.notifyDataSetChanged();
+            });
+        });
+    }
+
+    private void searchProducts(String query) {
+
+        SessionManager session = new SessionManager(this);
+        SupabaseAuthService supabase = new SupabaseAuthService();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+
+        executor.execute(() -> {
+
+            List<Product> results =
+                    supabase.getMenuItemByName(
+                            session.getToken(),
+                            query
+                    );
+
+            runOnUiThread(() -> {
+                popularProducts.clear();
+                popularProducts.addAll(results);
                 popularAdapter.notifyDataSetChanged();
             });
         });
