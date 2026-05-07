@@ -1,5 +1,6 @@
 package com.example.midtermsexam_beauty.utilities;
 
+import android.os.Build;
 import android.util.Log;
 
 import com.example.midtermsexam_beauty.BuildConfig;
@@ -19,9 +20,12 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class SupabaseAuthService {
     private static final String TAG = "SupabaseAuth";
@@ -314,6 +318,89 @@ public class SupabaseAuthService {
                 }
             }
         } catch (Exception e) { Log.e(TAG, "getRandomMenuItems error", e); }
+        return items;
+    }
+
+    public List<Product> getMenuItemByName(String token, String productName) {
+        List<Product> items = new ArrayList<>();
+
+        if (token == null || productName == null) return items;
+
+        try {
+            String encodedName = URLEncoder.encode(productName, "UTF-8");
+
+            URL url = new URL(
+                    getBaseUrl()
+                            + "/rest/v1/menu_items"
+                            + "?select=*,seller_profiles(store_name,profile(full_name))"
+                            + "&or=("
+                            + "name.ilike.*" + encodedName + "*,"
+                            + "description.ilike.*" + encodedName + "*,"
+                            + "category.ilike.*" + encodedName + "*"
+                            + ")"
+                            + "&is_available=eq.true"
+            );
+
+//            Only Menu Item Name Query
+//            URL url = new URL(
+//                    getBaseUrl()
+//                            + "/rest/v1/menu_items"
+//                            + "?select=*,seller_profiles(store_name,profile(full_name))"
+//                            + "&or=(name.ilike.*" + encodedName + "*)"
+//                            + "&is_available=eq.true"
+//            );
+
+            HttpURLConnection conn = (HttpsURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+
+                    String shopName = "Unknown Shop";
+
+                    if (obj.has("seller_profiles") && !obj.isNull("seller_profiles")) {
+                        JSONObject sp = obj.getJSONObject("seller_profiles");
+
+                        if (sp.has("store_name") && !sp.isNull("store_name") && !sp.getString("store_name").isEmpty()) {
+                            shopName = sp.getString("store_name");
+                        } else if (sp.has("profile") && !sp.isNull("profile")) {
+                            shopName = sp.getJSONObject("profile").optString("full_name", shopName);
+                        }
+                    }
+
+                    Product product = new Product(
+                            R.drawable.product_1,
+                            obj.getString("name"),
+                            obj.optString("description", ""),
+                            (float) obj.optDouble("price", 0.0),
+                            obj.optString("category", "Food"),
+                            true,
+                            4.8f,
+                            shopName
+                    );
+
+                    product.setSellerId(obj.getString("seller_id"));
+                    product.setImageUrl(obj.optString("image_url", ""));
+                    product.setShopName(shopName);
+
+                    items.add(product);
+                }
+            }
+
+        } catch (Exception e) { Log.e(TAG, "getMenuItemByName error", e); }
+
         return items;
     }
 
