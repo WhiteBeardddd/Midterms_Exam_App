@@ -48,7 +48,9 @@ public class Homepage extends AppCompatActivity {
             intent.putExtra("skin_type", product.getSkin_type());
             intent.putExtra("availability", product.getAvalability());
             intent.putExtra("sellerId", product.getSellerId());
-            intent.putExtra("imageUrl", product.getImageUrl()); // <- The crucial new line!
+            intent.putExtra("imageUrl", product.getImageUrl());  // avatar
+            intent.putExtra("shopBackground", product.getShopBackground()); // ✅ background
+            // <- The crucial new line!
             startActivity(intent);
         };
 

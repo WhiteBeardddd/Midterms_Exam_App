@@ -62,6 +62,10 @@ public class Product {
 
     public String getShopName() { return shopName; }
     public void setShopName(String shopName) { this.shopName = shopName; }
+    private String shopBackground;
+    public String getShopBackground() { return shopBackground; }
+    public void setShopBackground(String shopBackground) { this.shopBackground = shopBackground; }
+
 
     private static List<Product> loadMealsFromJSON(Context context, String fileName, String key) {
         List<Product> productList = new ArrayList<>();

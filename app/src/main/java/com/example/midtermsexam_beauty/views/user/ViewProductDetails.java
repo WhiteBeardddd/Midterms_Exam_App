@@ -89,15 +89,16 @@ public class ViewProductDetails extends AppCompatActivity {
                 sanitize(intent.getStringExtra("name"), DEFAULT_SHOP_NAME),
                 intent.getFloatExtra("rating", DEFAULT_RATING),
                 intent.getStringExtra("sellerId"),
-                intent.getStringExtra("imageUrl") // Reads the URL passed from Homepage
+                intent.getStringExtra("imageUrl"),
+                intent.getStringExtra("shopBackground")
         );
     }
 
     private void bindShopHeader(ShopPayload payload) {
-        // Loads dynamic image with Glide if it exists
-        if (payload.imageUrl != null && !payload.imageUrl.isEmpty()) {
+        // ✅ Background → cover image
+        if (payload.shopBackground != null && !payload.shopBackground.isEmpty()) {
             Glide.with(this)
-                    .load(payload.imageUrl)
+                    .load(payload.shopBackground)
                     .centerCrop()
                     .placeholder(R.drawable.product_1)
                     .into(shopCoverImage);
@@ -112,6 +113,13 @@ public class ViewProductDetails extends AppCompatActivity {
     }
 
     private void bindLogo(ShopPayload payload) {
+        // ✅ Avatar URL takes priority
+        if (payload.imageUrl != null && !payload.imageUrl.isEmpty()) {
+            shopLogoImage.setVisibility(View.VISIBLE);
+            shopLogoInitials.setVisibility(View.GONE);
+            Glide.with(this).load(payload.imageUrl).centerCrop().into(shopLogoImage);
+            return;
+        }
         if (payload.logoImageId != 0) {
             shopLogoImage.setVisibility(View.VISIBLE);
             shopLogoInitials.setVisibility(View.GONE);
@@ -179,15 +187,17 @@ public class ViewProductDetails extends AppCompatActivity {
         private final String shopName;
         private final float rating;
         private final String sellerId;
-        private final String imageUrl;
+        private final String imageUrl;       // avatar
+        private final String shopBackground; // ✅ background
 
-        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId, String imageUrl) {
+        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId, String imageUrl, String shopBackground) {
             this.coverImageId = coverImageId;
             this.logoImageId = logoImageId;
             this.shopName = shopName;
             this.rating = rating;
             this.sellerId = sellerId;
             this.imageUrl = imageUrl;
+            this.shopBackground = shopBackground;
         }
     }
 }

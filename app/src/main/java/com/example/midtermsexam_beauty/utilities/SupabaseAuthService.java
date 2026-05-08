@@ -360,7 +360,7 @@ public class SupabaseAuthService {
         List<Product> shops = new ArrayList<>();
         if (token == null) return shops;
         try {
-            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,profile(full_name,avatar_url)");
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,seller_avatar_url,seller_profile_bg,profile(full_name)");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
@@ -373,28 +373,33 @@ public class SupabaseAuthService {
                 JSONArray arr = new JSONArray(body);
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
-                    String id = obj.getString("id");
 
+                    // ✅ Store name
                     String shopName = "Unnamed Shop";
-                    String avatarUrl = "";
-
-                    if (obj.has("store_name") && !obj.isNull("store_name") && !obj.getString("store_name").isEmpty()){
+                    if (obj.has("store_name") && !obj.isNull("store_name") && !obj.getString("store_name").isEmpty()) {
                         shopName = obj.optString("store_name", shopName);
                     } else if (obj.has("profile") && !obj.isNull("profile")) {
                         shopName = obj.getJSONObject("profile").optString("full_name", shopName);
                     }
 
+                    // ✅ Seller username from profile join
+                    String sellerUsername = "";
                     if (obj.has("profile") && !obj.isNull("profile")) {
-                        avatarUrl = obj.getJSONObject("profile").optString("avatar_url", "");
+                        sellerUsername = obj.getJSONObject("profile").optString("full_name", "");
                     }
 
+                    // ✅ Avatar from seller_profiles.seller_avatar_url
+                    String avatarUrl = obj.optString("seller_avatar_url", "");
+
                     Product shop = new Product(R.drawable.product_1, shopName, obj.optString("description", "A great place to eat!"), 0.0f, "Restaurant", true, 4.8f, "All");
-                    shop.setSellerId(id);
+                    shop.setSellerId(obj.getString("id"));
                     shop.setImageUrl(avatarUrl);
+                    shop.setShopName(sellerUsername);
+                    shop.setShopBackground(obj.optString("seller_profile_bg", ""));// seller's real name as subtitle
                     shops.add(shop);
                 }
             }
-        } catch (Exception e) { }
+        } catch (Exception e) { Log.e(TAG, "getAllShops error", e); }
         return shops;
     }
 
@@ -1034,6 +1039,42 @@ public class SupabaseAuthService {
                 if (arr.length() > 0) return arr.getJSONObject(0).optString("seller_avatar_url", "");
             }
         } catch (Exception e) { Log.e(TAG, "getSellerAvatarUrl error", e); }
+        return "";
+    }
+
+    public String getShopBackgroundBySellerId(String token, String sellerId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?id=eq." + sellerId + "&select=seller_profile_bg");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("seller_profile_bg", "");
+            }
+        } catch (Exception e) { Log.e(TAG, "getShopBackgroundBySellerId error", e); }
+        return "";
+    }
+
+    public String getSellerAvatarUrlBySellerId(String token, String sellerId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?id=eq." + sellerId + "&select=seller_avatar_url");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("seller_avatar_url", "");
+            }
+        } catch (Exception e) { Log.e(TAG, "getSellerAvatarUrlBySellerId error", e); }
         return "";
     }
 }
