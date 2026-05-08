@@ -25,58 +25,62 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <!-- Shop Background Banner -->
-                <FrameLayout
+                <!-- Replace the entire banner + store name section with this -->
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="180dp">
+                    android:layout_height="wrap_content">
 
+                    <!-- Background banner -->
                     <ImageView
                         android:id="@+id/ivShopBackground"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_height="180dp"
                         android:scaleType="centerCrop"
                         android:src="@color/black" />
 
+                    <!-- Edit background button -->
                     <ImageButton
                         android:id="@+id/btnEditBackground"
                         android:layout_width="36dp"
                         android:layout_height="36dp"
-                        android:layout_gravity="top|end"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentEnd="true"
                         android:layout_margin="12dp"
                         android:background="@drawable/surface_card"
                         android:src="@drawable/back_icon"
                         android:padding="8dp"
                         android:contentDescription="Edit background" />
 
-                    <!-- Avatar overlapping the bottom edge -->
-                    <FrameLayout
+                    <!-- Avatar — positioned to overlap the banner bottom naturally -->
+                    <ImageView
+                        android:id="@+id/ivSellerAvatar"
                         android:layout_width="88dp"
                         android:layout_height="88dp"
-                        android:layout_gravity="bottom|start"
                         android:layout_marginStart="20dp"
-                        android:layout_marginBottom="-44dp">
+                        android:layout_marginTop="136dp"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/surface_card"
+                        android:contentDescription="Seller avatar" />
 
-                        <ImageView
-                            android:id="@+id/ivSellerAvatar"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:scaleType="centerCrop"
-                            android:background="@drawable/surface_card"
-                            android:contentDescription="Seller avatar" />
+                    <!-- Camera button on avatar -->
+                    <ImageButton
+                        android:id="@+id/btnEditAvatar"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_marginStart="80dp"
+                        android:layout_marginTop="196dp"
+                        android:background="@drawable/cta_primary"
+                        android:src="@drawable/check_out_icon"
+                        android:padding="6dp"
+                        android:contentDescription="Edit avatar" />
 
-                        <ImageButton
-                            android:id="@+id/btnEditAvatar"
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:layout_gravity="bottom|end"
-                            android:background="@drawable/cta_primary"
-                            android:src="@drawable/check_out_icon"
-                            android:padding="6dp"
-                            android:contentDescription="Edit avatar" />
-                    </FrameLayout>
-                </FrameLayout>
+
+                </RelativeLayout>
 
                 <!-- Store name row — 52dp top margin clears the avatar overlap -->
                 <LinearLayout

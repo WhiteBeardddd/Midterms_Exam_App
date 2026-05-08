@@ -988,4 +988,52 @@ public class SupabaseAuthService {
         } catch (Exception e) { Log.e(TAG, "saveShopBackground error", e); }
         return false;
     }
+
+
+    public boolean saveSellerAvatarUrl(String token, String profileId, String avatarUrl) {
+        if (token == null || profileId == null) return false;
+        try {
+            URL checkUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
+            HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            checkConn.setRequestProperty("Authorization", "Bearer " + token);
+            int checkCode = checkConn.getResponseCode();
+            String checkBody = readStream(checkCode < 300 ? checkConn.getInputStream() : checkConn.getErrorStream());
+            checkConn.disconnect();
+
+            JSONArray arr = new JSONArray(checkBody);
+            JSONObject payload = new JSONObject()
+                    .put("profile_id", profileId)
+                    .put("seller_avatar_url", avatarUrl != null ? avatarUrl : "");
+
+            if (arr.length() > 0) {
+                String existingId = arr.getJSONObject(0).getString("id");
+                return patch("/rest/v1/seller_profiles?id=eq." + existingId, payload.toString(), token);
+            } else {
+                payload.put("is_open", true);
+                HttpResponse res = post("/rest/v1/seller_profiles", payload.toString(), token);
+                return res.statusCode >= 200 && res.statusCode < 300;
+            }
+        } catch (Exception e) { Log.e(TAG, "saveSellerAvatarUrl error", e); }
+        return false;
+    }
+
+    public String getSellerAvatarUrl(String token, String profileId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=seller_avatar_url");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("seller_avatar_url", "");
+            }
+        } catch (Exception e) { Log.e(TAG, "getSellerAvatarUrl error", e); }
+        return "";
+    }
 }
