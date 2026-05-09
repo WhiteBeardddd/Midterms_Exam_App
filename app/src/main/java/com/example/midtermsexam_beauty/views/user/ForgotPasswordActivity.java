@@ -50,17 +50,19 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         btnSendReset.setText("Sending...");
 
         executor.execute(() -> {
-            boolean success = authService.sendPasswordResetEmail(email);
+            // We are using AuthResult now to catch the exact message
+            SupabaseAuthService.AuthResult result = authService.sendPasswordResetEmail(email);
 
             runOnUiThread(() -> {
                 btnSendReset.setEnabled(true);
                 btnSendReset.setText("Send Reset Link");
 
-                if (success) {
+                if (result.success) {
                     Toast.makeText(this, "Reset link sent! Check your inbox.", Toast.LENGTH_LONG).show();
                     finish();
                 } else {
-                    Toast.makeText(this, "Failed to send email. Check if the address is correct.", Toast.LENGTH_LONG).show();
+                    // SHOW THE REAL ERROR MESSAGE!
+                    Toast.makeText(this, "Error: " + result.message, Toast.LENGTH_LONG).show();
                 }
             });
         });

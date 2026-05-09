@@ -1201,11 +1201,12 @@ public class SupabaseAuthService {
     }
 
     // --- NEW: Send Password Reset Email ---
-    public boolean sendPasswordResetEmail(String email) {
+// --- UPGRADED: Send Password Reset Email ---
+    public AuthResult sendPasswordResetEmail(String email) {
         try {
             JSONObject payload = new JSONObject().put("email", email);
+            URL url = new URL(getBaseUrl() + "/auth/v1/recover?redirect_to=midtermsapp://reset");
 
-            URL url = new URL(getBaseUrl() + "/auth/v1/recover");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
@@ -1217,12 +1218,18 @@ public class SupabaseAuthService {
             }
 
             int code = conn.getResponseCode();
-            conn.disconnect();
-
-            return code >= 200 && code < 300;
+            if (code >= 200 && code < 300) {
+                conn.disconnect();
+                return new AuthResult(true, "Check your email.", null, null);
+            } else {
+                // If it fails, read the EXACT error from Supabase!
+                String errorBody = readStream(conn.getErrorStream());
+                conn.disconnect();
+                return new AuthResult(false, extractErrorMessage(errorBody), null, null);
+            }
         } catch (Exception e) {
             Log.e(TAG, "sendPasswordResetEmail error", e);
-            return false;
+            return new AuthResult(false, e.getMessage(), null, null);
         }
     }
 }
