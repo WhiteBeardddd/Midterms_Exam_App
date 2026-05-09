@@ -26,6 +26,7 @@ public class Product {
     private String sellerId;
     private String imageUrl;
     private String shopName; // NEW
+    private String id; // NEW: Holds the Supabase menu_item_id
 
     public Product(int imageID, String name, String description, float price, String category,
                    boolean availability, float rating, String skinType) {
@@ -61,6 +62,10 @@ public class Product {
 
     public String getShopName() { return shopName; }
     public void setShopName(String shopName) { this.shopName = shopName; }
+    private String shopBackground;
+    public String getShopBackground() { return shopBackground; }
+    public void setShopBackground(String shopBackground) { this.shopBackground = shopBackground; }
+
 
     private static List<Product> loadMealsFromJSON(Context context, String fileName, String key) {
         List<Product> productList = new ArrayList<>();
@@ -95,4 +100,6 @@ public class Product {
     public static List<Product> getMeals(Context context, String fromWhere) {
         return loadMealsFromJSON(context, "meals.json", fromWhere);
     }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 }

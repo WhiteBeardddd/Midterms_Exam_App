@@ -9,9 +9,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
@@ -66,13 +64,16 @@ public class UserProfile extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
-        // Removed: toggle listener that revealed/hid the store name field.
-        // layoutStoreName visibility is now handled solely by loadProfile().
-
         loadProfile();
 
         settingBtn.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
-        orderBtn.setOnClickListener(v -> Toast.makeText(this, "Order Lists", Toast.LENGTH_SHORT).show());
+
+        // This takes the user to the new page!
+        orderBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(UserProfile.this, MyOrdersActivity.class);
+            startActivity(intent);
+        });
+
         favBtn.setOnClickListener(v -> Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show());
         addressBtn.setOnClickListener(v -> startActivity(new Intent(this, AddressActivity.class)));
 
@@ -121,11 +122,6 @@ public class UserProfile extends AppCompatActivity {
             return;
         }
 
-        if (isSeller && storeName.isEmpty()) {
-            etStoreName.setError("Store Name is required");
-            etStoreName.requestFocus();
-            return;
-        }
 
         btnSave.setEnabled(false);
         executor.execute(() -> {

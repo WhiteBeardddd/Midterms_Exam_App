@@ -2,6 +2,7 @@ package com.example.midtermsexam_beauty.views.seller;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -79,21 +80,33 @@ public class SellerUserProfile extends AppCompatActivity {
 
     private void loadProfile() {
         executor.execute(() -> {
-            Profile profile = authService.getProfile(
-                    session.getToken(),
-                    session.getUserId()
-            );
+            String token  = session.getToken();
+            String userId = session.getUserId();
+            String profileId = session.getProfileId();
+
+            Log.d("SellerProfile", "token: " + token);
+            Log.d("SellerProfile", "userId: " + userId);
+            Log.d("SellerProfile", "profileId: " + profileId);
+
+            Profile profile = authService.getProfile(token, userId);
+
+            Log.d("SellerProfile", "profile null? " + (profile == null));
+            if (profile != null) {
+                Log.d("SellerProfile", "fullName: " + profile.getFullName());
+                Log.d("SellerProfile", "phone: " + profile.getPhone());
+                Log.d("SellerProfile", "profileId from profile: " + profile.getId());
+            }
 
             String storeName = "";
-            String address = "";
+            String address   = "";
 
             if (profile != null && profile.getId() != null) {
-                storeName = authService.getStoreName(session.getToken(), profile.getId());
-                address = authService.getAddress(session.getToken(), profile.getId());
+                storeName = authService.getStoreName(token, profile.getId());
+                address   = authService.getAddress(token, profile.getId());
             }
 
             String finalStoreName = storeName;
-            String finalAddress = address;
+            String finalAddress   = address;
 
             if (profile != null) {
                 runOnUiThread(() -> {
@@ -108,11 +121,11 @@ public class SellerUserProfile extends AppCompatActivity {
     }
 
     private void saveProfile() {
-        String fullName = etFullName.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
+        String fullName  = etFullName.getText().toString().trim();
+        String phone     = etPhone.getText().toString().trim();
         boolean isSeller = switchIsSeller.isChecked();
         String storeName = etStoreName.getText().toString().trim();
-        String address = etAddress.getText().toString().trim();
+        String address   = etAddress.getText().toString().trim();
 
         if (session.getToken() == null || session.getUserId() == null) {
             Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
@@ -120,34 +133,27 @@ public class SellerUserProfile extends AppCompatActivity {
             return;
         }
 
-        if (fullName.isEmpty()) {
-            etFullName.setError("Name is required");
-            etFullName.requestFocus();
-            return;
-        }
-
-        if (storeName.isEmpty()) {
-            etStoreName.setError("Store name is required");
-            etStoreName.requestFocus();
-            return;
-        }
+//        if (fullName.isEmpty()) { etFullName.setError("Name is required"); etFullName.requestFocus(); return; }
+//        if (storeName.isEmpty()) { etStoreName.setError("Store name is required"); etStoreName.requestFocus(); return; }
 
         btnSave.setEnabled(false);
         executor.execute(() -> {
+            // ✅ Fetch existing avatar_url so we don't wipe it on save
+            Profile existing = authService.getProfile(session.getToken(), session.getUserId());
+            String existingAvatarUrl = existing != null ? existing.getAvatarUrl() : "";
+
             boolean profileSuccess = authService.updateProfile(
-                    session.getToken(), session.getUserId(), fullName, phone, isSeller, ""
+                    session.getToken(), session.getUserId(),
+                    fullName, phone, isSeller,
+                    existingAvatarUrl  // ✅ was "" before — that was wiping it
             );
 
-            boolean storeSuccess = true;
+            boolean storeSuccess   = true;
             boolean addressSuccess = true;
 
             if (profileSuccess) {
-                storeSuccess = authService.saveStoreName(
-                        session.getToken(), session.getProfileId(), storeName
-                );
-                addressSuccess = authService.saveAddress(
-                        session.getToken(), session.getProfileId(), address
-                );
+                storeSuccess   = authService.saveStoreName(session.getToken(), session.getProfileId(), storeName);
+                addressSuccess = authService.saveAddress(session.getToken(), session.getProfileId(), address);
             }
 
             boolean finalSuccess = profileSuccess && storeSuccess && addressSuccess;
@@ -157,12 +163,9 @@ public class SellerUserProfile extends AppCompatActivity {
                 if (finalSuccess) {
                     session.setIsSeller(isSeller);
                     Toast.makeText(this, "Profile updated!", Toast.LENGTH_SHORT).show();
-
-                    if (!isSeller) {
-                        startActivity(new Intent(this, UserProfile.class));
-                    } else {
-                        startActivity(new Intent(this, SellerDashboard.class));
-                    }
+                    startActivity(new Intent(this, isSeller
+                            ? SellerDashboard.class
+                            : com.example.midtermsexam_beauty.views.user.UserProfile.class));
                     finish();
                 } else {
                     Toast.makeText(this, "Failed to update profile.", Toast.LENGTH_SHORT).show();

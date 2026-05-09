@@ -13,12 +13,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.CheckOutCard;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
+import com.example.midtermsexam_beauty.models.BuyerAddress;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.utilities.ProductManager;
+import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Checkout extends AppCompatActivity {
     private final List<Product> productList = new ArrayList<>();
@@ -26,6 +32,12 @@ public class Checkout extends AppCompatActivity {
     private ListView cartListView;
     private CheckOutCard checkOutAdapter;
     private final float deliveryFee = 49.0f;
+    private Button btnPlaceOrder;
+
+    private SessionManager sessionManager;
+    private SupabaseAuthService authService;
+    private ExecutorService executor;
+    private BuyerAddress userAddress = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,18 +46,19 @@ public class Checkout extends AppCompatActivity {
 
         NavbarCard.setupNavbar(this);
 
-        // Bind Views
+        sessionManager = new SessionManager(this);
+        authService = new SupabaseAuthService();
+        executor = Executors.newSingleThreadExecutor();
+
         ImageButton toPrevious = findViewById(R.id.back_btn);
         cartListView = findViewById(R.id.cart_list);
         tvSubtotal = findViewById(R.id.tv_subtotal);
         tvTotal = findViewById(R.id.tv_total_price);
-        Button btnPlaceOrder = findViewById(R.id.btn_place_order);
+        btnPlaceOrder = findViewById(R.id.btn_place_order);
 
-        // Initialize Adapter once
         checkOutAdapter = new CheckOutCard(this, productList);
         cartListView.setAdapter(checkOutAdapter);
 
-        // Listeners
         toPrevious.setOnClickListener(view -> finish());
         btnPlaceOrder.setOnClickListener(v -> handleOrderPlacement());
     }
@@ -53,9 +66,18 @@ public class Checkout extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // REFRESH DATA EVERY TIME SCREEN BECOMES VISIBLE
         loadCartData();
         updateTotalPrice();
+        fetchUserAddress();
+    }
+
+    private void fetchUserAddress() {
+        executor.execute(() -> {
+            BuyerAddress address = authService.getBuyerAddress(sessionManager.getToken(), sessionManager.getProfileId());
+            runOnUiThread(() -> {
+                userAddress = address;
+            });
+        });
     }
 
     private void loadCartData() {
@@ -67,19 +89,28 @@ public class Checkout extends AppCompatActivity {
             productList.add(p);
         }
 
-        // Notify the adapter that the underlying data has changed
         if (checkOutAdapter != null) {
             checkOutAdapter.notifyDataSetChanged();
         }
     }
 
+    @SuppressLint("DefaultLocale")
     private void updateTotalPrice() {
         double subtotal = 0;
+        List<String> uniqueSellers = new ArrayList<>();
+
         for (Product product : productList) {
             subtotal += product.getPrice() * product.getCounter();
+            String sId = product.getSellerId();
+            if (sId != null && !uniqueSellers.contains(sId)) {
+                uniqueSellers.add(sId);
+            }
         }
 
-        double total = subtotal > 0 ? subtotal + deliveryFee : 0;
+        int shopCount = uniqueSellers.isEmpty() ? 1 : uniqueSellers.size();
+        if (productList.isEmpty()) shopCount = 0;
+
+        double total = subtotal + (deliveryFee * shopCount);
 
         tvSubtotal.setText(String.format("₱%.2f", subtotal));
         tvTotal.setText(String.format("₱%.2f", total));
@@ -88,13 +119,85 @@ public class Checkout extends AppCompatActivity {
     private void handleOrderPlacement() {
         if (productList.isEmpty()) {
             Toast.makeText(this, "Empty cart!", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_SHORT).show();
-            ProductManager.getInstance().getCartItems().clear();
-            // Refresh local list and UI immediately
-            loadCartData();
-            updateTotalPrice();
-            finish();
+            return;
         }
+
+        if (userAddress == null) {
+            Toast.makeText(this, "Please set a delivery address in your Account settings first!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        btnPlaceOrder.setEnabled(false);
+        btnPlaceOrder.setText("Placing Order...");
+
+        executor.execute(() -> {
+            Map<String, Double> subtotalsBySeller = new HashMap<>();
+            Map<String, List<Product>> itemsBySeller = new HashMap<>();
+
+            for (Product product : productList) {
+                String sId = product.getSellerId() != null ? product.getSellerId() : "UNKNOWN";
+                double itemTotal = product.getPrice() * product.getCounter();
+
+                subtotalsBySeller.put(sId, subtotalsBySeller.getOrDefault(sId, 0.0) + itemTotal);
+
+                if (!itemsBySeller.containsKey(sId)) {
+                    itemsBySeller.put(sId, new ArrayList<>());
+                }
+                itemsBySeller.get(sId).add(product);
+            }
+
+            String addressId = userAddress.getId();
+            String fullAddressString = userAddress.getStreet() + ", " + userAddress.getBarangay() + ", " + userAddress.getCity();
+
+            boolean allSuccess = true;
+
+            for (Map.Entry<String, Double> entry : subtotalsBySeller.entrySet()) {
+                String currentSellerId = entry.getKey().equals("UNKNOWN") ? null : entry.getKey();
+                double shopSubtotal = entry.getValue();
+                double shopTotal = shopSubtotal + deliveryFee;
+
+                String newOrderId = authService.placeOrder(
+                        sessionManager.getToken(),
+                        sessionManager.getProfileId(),
+                        currentSellerId,
+                        addressId,
+                        shopTotal,
+                        fullAddressString
+                );
+
+                if (newOrderId != null) {
+                    List<Product> shopItems = itemsBySeller.get(entry.getKey());
+                    boolean itemsSaved = authService.addOrderItems(sessionManager.getToken(), newOrderId, shopItems);
+                    if (!itemsSaved) {
+                        allSuccess = false;
+                    }
+                } else {
+                    allSuccess = false;
+                }
+            }
+
+            boolean finalSuccess = allSuccess;
+            runOnUiThread(() -> {
+                btnPlaceOrder.setEnabled(true);
+                btnPlaceOrder.setText("Place Order");
+                if (finalSuccess) {
+                    Toast.makeText(this, "Orders Placed Successfully!", Toast.LENGTH_SHORT).show();
+                    ProductManager.getInstance().getCartItems().clear();
+                    loadCartData();
+                    updateTotalPrice();
+                    finish();
+                } else {
+                    Toast.makeText(this, "Failed to place some items. Check Logcat!", Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (executor != null) {
+            executor.shutdown();
+        }
+        super.onDestroy();
     }
 }

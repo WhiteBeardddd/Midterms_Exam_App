@@ -42,9 +42,8 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
         MenuItem item = menuItems.get(position);
 
         holder.tvName.setText(item.getName());
+        holder.tvDesc.setText(item.getDescription() != null ? item.getDescription() : "");
         holder.tvPrice.setText(String.format(Locale.US, "₱%.2f", item.getPrice()));
-        holder.tvDesc.setText(item.getDescription());
-        holder.tvRating.setText("4.9 ★");
 
         if (item.getImageUrl() != null && !item.getImageUrl().isEmpty()) {
             Glide.with(context)
@@ -63,6 +62,8 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.ViewHolder> {
             intent.putExtra("item_price", item.getPrice());
             intent.putExtra("shop_name", shopName);
             intent.putExtra("image_url", item.getImageUrl());
+            intent.putExtra("seller_id", item.getSellerId()); // Pass seller ID
+            intent.putExtra("item_id", item.getId());
             context.startActivity(intent);
         });
     }

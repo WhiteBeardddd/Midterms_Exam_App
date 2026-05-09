@@ -116,6 +116,8 @@ public class PopularProducts extends AppCompatActivity {
         intent.putExtra("item_price", (double) product.getPrice());
         intent.putExtra("shop_name", product.getShopName());
         intent.putExtra("image_url", product.getImageUrl());
+        intent.putExtra("seller_id", product.getSellerId()); // Pass seller ID
+        intent.putExtra("item_id", product.getId());
         startActivity(intent);
     }
 }

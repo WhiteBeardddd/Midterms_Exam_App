@@ -185,7 +185,6 @@
                         android:layout_height="wrap_content" />
                 </LinearLayout>
 
-                <!-- Clean Store Name Field -->
                 <LinearLayout
                     android:id="@+id/layoutStoreName"
                     android:layout_width="match_parent"
@@ -302,8 +301,9 @@
 
                         <include layout="@layout/dropdown_terms"/>
                     </LinearLayout>
-
                 </LinearLayout>
+
+
 
                 <Button
                     android:id="@+id/btnSaveProfile"

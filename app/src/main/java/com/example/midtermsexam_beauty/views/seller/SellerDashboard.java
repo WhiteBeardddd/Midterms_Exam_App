@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
 import com.example.midtermsexam_beauty.models.Profile;
@@ -42,9 +43,8 @@ public class SellerDashboard extends AppCompatActivity {
     private TextView tvStoreName, tvSellerName;
 
     private String token, authId, profileId;
-    private boolean isUpdatingAvatar = false; // Tracks which image is being uploaded
+    private boolean isUpdatingAvatar = false;
 
-    // Modern ActivityResultLauncher for picking images
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
@@ -64,9 +64,8 @@ public class SellerDashboard extends AppCompatActivity {
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
 
-        // Initialize user session variables
-        token = sessionManager.getToken();
-        authId = sessionManager.getUserId();
+        token     = sessionManager.getToken();
+        authId    = sessionManager.getUserId();
         profileId = sessionManager.getProfileId();
 
         ivShopBackground = findViewById(R.id.ivShopBackground);
@@ -86,10 +85,10 @@ public class SellerDashboard extends AppCompatActivity {
 
         SellerNavCard.setupNavbar(this);
 
-        tvTotalSales = findViewById(R.id.tvTotalSales);
+        tvTotalSales      = findViewById(R.id.tvTotalSales);
         tvCompletedOrders = findViewById(R.id.tvCompletedOrders);
-        tvPendingOrders = findViewById(R.id.tvPendingOrders);
-        tvTotalItems = findViewById(R.id.tvTotalItems);
+        tvPendingOrders   = findViewById(R.id.tvPendingOrders);
+        tvTotalItems      = findViewById(R.id.tvTotalItems);
 
         Button btnSellerLogout = findViewById(R.id.btnSellerLogout);
         btnSellerLogout.setOnClickListener(v -> AppNavigator.logout(this, sessionManager));
@@ -104,12 +103,10 @@ public class SellerDashboard extends AppCompatActivity {
             Profile profile  = authService.getProfile(token, authId);
             String storeName = authService.getStoreName(token, profileId);
             String bgUrl     = authService.getShopBackground(token, profileId);
-
-            // 1. Resolve Seller ID from Profile
-            String sellerId = authService.getSellerIdByAuthId(token, authId);
+            String avatarUrl = authService.getSellerAvatarUrl(token, profileId);
+            String sellerId  = authService.getSellerIdByAuthId(token, authId);
 
             if (sellerId != null) {
-                // 2. Fetch Stats
                 SupabaseAuthService.SellerStats stats = authService.getStats(token, sellerId);
 
                 handler.post(() -> {
@@ -118,9 +115,23 @@ public class SellerDashboard extends AppCompatActivity {
                     tvPendingOrders.setText(String.valueOf(stats.pendingOrders));
                     tvTotalItems.setText(String.valueOf(stats.totalItems));
 
-                    // Optional: load the fetched background/avatar here if not loaded elsewhere
+                    tvStoreName.setText(storeName != null && !storeName.isEmpty() ? storeName : "My Store");
+                    tvSellerName.setText(profile != null ? profile.getFullName() : "Seller");
+
                     if (bgUrl != null && !bgUrl.isEmpty()) {
-                        Glide.with(this).load(bgUrl).into(ivShopBackground);
+                        Glide.with(this)
+                                .load(bgUrl)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(ivShopBackground);
+                    }
+
+                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                        Glide.with(this)
+                                .load(avatarUrl)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(ivSellerAvatar);
                     }
                 });
             }
@@ -133,52 +144,77 @@ public class SellerDashboard extends AppCompatActivity {
         imagePickerLauncher.launch(intent);
     }
 
+    // Same pattern as SellerMenu's extractPathFromUrl()
+    private String extractPathFromUrl(String imageUrl, boolean isAvatar) {
+        try {
+            String marker = isAvatar
+                    ? "/object/public/seller-avatars/"
+                    : "/object/public/seller-backgrounds/";
+            int idx = imageUrl.indexOf(marker);
+            if (idx != -1) return imageUrl.substring(idx + marker.length());
+        } catch (Exception e) { Log.e(TAG, "extractPathFromUrl error", e); }
+        return null;
+    }
+
     private void uploadSelectedImage(Uri imageUri, boolean isAvatar) {
         executor.execute(() -> {
             try {
-                Log.d(TAG, "uploadSelectedImage uri: " + imageUri);
+                // Read bytes — same as SellerMenu's uploadImage()
                 InputStream is = getContentResolver().openInputStream(imageUri);
                 if (is == null) {
                     Log.e(TAG, "InputStream is null");
                     return;
                 }
-
-                // Using the safe byte reader from your SellerMenu
                 byte[] bytes = readStreamBytes(is);
                 is.close();
 
-                String bucket = isAvatar ? "seller-avatars" : "seller-backgrounds";
-
+                String bucket   = isAvatar ? "seller-avatars" : "seller-backgrounds";
                 String mimeType = getContentResolver().getType(imageUri);
                 if (mimeType == null) mimeType = "image/jpeg";
                 String ext  = mimeType.contains("png") ? "png" : "jpg";
+                String path = authId + "/" + UUID.randomUUID() + "." + ext;
 
-                // Unique path generation using UUID
-                String path = profileId + "/" + UUID.randomUUID() + "." + ext;
+                // Delete old — same pattern as SellerMenu's saveMenuItem()
+                String oldUrl = isAvatar
+                        ? authService.getSellerAvatarUrl(token, profileId)
+                        : authService.getShopBackground(token, profileId);
+                Log.d(TAG, "Old URL: " + oldUrl);
 
+                if (oldUrl != null && !oldUrl.isEmpty()) {
+                    String oldPath = extractPathFromUrl(oldUrl, isAvatar);
+                    Log.d(TAG, "Deleting old path: " + oldPath);
+                    if (oldPath != null) authService.deleteImage(token, bucket, oldPath);
+                }
+
+                // Upload new
                 String uploadedUrl = authService.uploadImage(token, bucket, path, bytes, mimeType);
+                Log.d(TAG, "Uploaded new URL: " + uploadedUrl);
 
                 if (uploadedUrl == null) {
                     handler.post(() -> Toast.makeText(this, "Failed to upload image.", Toast.LENGTH_SHORT).show());
                     return;
                 }
 
-                boolean saved;
-                if (isAvatar) {
-                    // Reuse existing updateProfile — just update avatar_url
-                    saved = authService.updateProfile(token, authId, null, null, true, uploadedUrl);
-                } else {
-                    saved = authService.saveShopBackground(token, profileId, uploadedUrl);
-                }
+                // Save to DB
+                boolean saved = isAvatar
+                        ? authService.saveSellerAvatarUrl(token, profileId, uploadedUrl)
+                        : authService.saveShopBackground(token, profileId, uploadedUrl);
 
                 if (saved) {
                     handler.post(() -> {
-                        Glide.with(this).load(uploadedUrl).into(isAvatar ? ivSellerAvatar : ivShopBackground);
-                        Toast.makeText(this, isAvatar ? "Avatar updated!" : "Background updated!", Toast.LENGTH_SHORT).show();
+                        Glide.with(this)
+                                .load(uploadedUrl)
+                                .skipMemoryCache(true)
+                                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                .into(isAvatar ? ivSellerAvatar : ivShopBackground);
+                        Toast.makeText(this,
+                                isAvatar ? "Avatar updated!" : "Background updated!",
+                                Toast.LENGTH_SHORT).show();
                     });
                 } else {
                     handler.post(() -> Toast.makeText(this, "Failed to save to database.", Toast.LENGTH_SHORT).show());
                 }
+
             } catch (Exception e) {
                 Log.e(TAG, "Upload failed", e);
                 handler.post(() -> Toast.makeText(this, "An error occurred during upload.", Toast.LENGTH_SHORT).show());
@@ -186,7 +222,6 @@ public class SellerDashboard extends AppCompatActivity {
         });
     }
 
-    // Helper method to safely read bytes on all API levels
     private byte[] readStreamBytes(InputStream is) throws Exception {
         java.io.ByteArrayOutputStream buffer = new java.io.ByteArrayOutputStream();
         int nRead;
