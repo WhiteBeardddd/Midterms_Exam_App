@@ -12,7 +12,9 @@ import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.ProductCard;
 import com.example.midtermsexam_beauty.adapters.RestaurantFeedAdapter;
+import com.example.midtermsexam_beauty.adapters.SellerCard;
 import com.example.midtermsexam_beauty.models.Product;
+import com.example.midtermsexam_beauty.models.SellerProfile;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
@@ -29,12 +31,10 @@ public class Homepage extends AppCompatActivity {
         setContentView(R.layout.activity_homepage);
 
         RecyclerView featuredListView = findViewById(R.id.featured_recycler);
-        RecyclerView popularListView = findViewById(R.id.popular_recycler);
+        RecyclerView nearbyListView = findViewById(R.id.popular_recycler);
         EditText searchEditText = findViewById(R.id.searchEditText);
 
         NavbarCard.setupNavbar(this);
-
-        List<Product> featuredProducts = getStaticFeaturedShops();
 
         // LISTENER: Passes the dynamic image URL to the details page
         ProductCard.OnItemClickListener listener = product -> {
@@ -54,22 +54,43 @@ public class Homepage extends AppCompatActivity {
             startActivity(intent);
         };
 
-        ProductCard featuredAdapter = new ProductCard(this, featuredProducts, listener);
         featuredListView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        featuredListView.setAdapter(featuredAdapter);
 
-        popularListView.setLayoutManager(new LinearLayoutManager(this));
+        nearbyListView.setLayoutManager(new LinearLayoutManager(this));
 
         SessionManager session = new SessionManager(this);
         SupabaseAuthService supabase = new SupabaseAuthService();
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         executor.execute(() -> {
+            // Fetches all Featured Shop
+            List<SellerProfile> featuredShops = supabase.getFeaturedShops(session.getToken());
+
+            runOnUiThread(() -> {
+                SellerCard adapter = new SellerCard(this, featuredShops, seller -> {
+                    Intent intent = new Intent(this, ViewProductDetails.class);
+
+                    intent.putExtra("sellerId", seller.getId());
+                    intent.putExtra("name", seller.getStoreName());
+                    intent.putExtra("description", seller.getDescription());
+                    intent.putExtra("address", seller.getAddress());
+                    intent.putExtra("isOpen", seller.isOpen());
+                    intent.putExtra("imageUrl", seller.getSellerAvatarUrl());
+                    intent.putExtra("backgroundUrl", seller.getSellerProfileBg());
+
+                    startActivity(intent);
+                });
+
+                featuredListView.setAdapter(adapter);
+            });
+        });
+
+        executor.execute(() -> {
             // Fetches all shops and their avatar_urls from Supabase
             List<Product> dynamicShops = supabase.getAllShops(session.getToken());
             runOnUiThread(() -> {
                 RestaurantFeedAdapter popularAdapter = new RestaurantFeedAdapter(this, dynamicShops, listener);
-                popularListView.setAdapter(popularAdapter);
+                nearbyListView.setAdapter(popularAdapter);
             });
         });
 
@@ -79,14 +100,5 @@ public class Homepage extends AppCompatActivity {
                 v.clearFocus();
             }
         });
-    }
-
-    private List<Product> getStaticFeaturedShops() {
-        List<Product> shops = new ArrayList<>();
-        shops.add(new Product(R.drawable.product_1, "Minute Burger", "Quick burgers and budget-friendly bites.", 99.00f, "Fast Food", true, 4.8f, "All"));
-        shops.add(new Product(R.drawable.product_2, "Jollibee", "Comfort food with crowd favorites.", 149.00f, "Chicken & Rice", true, 4.9f, "All"));
-        shops.add(new Product(R.drawable.product_3, "McDonalds", "Reliable fast-food staples.", 139.00f, "Burgers", true, 4.7f, "All"));
-        shops.add(new Product(R.drawable.product_4, "KFC", "Crispy chicken meals and box deals.", 179.00f, "Fried Chicken", true, 4.8f, "All"));
-        return shops;
     }
 }
