@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -44,25 +45,54 @@
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
 
-                <!-- Placeholder for Orders List -->
+                <!-- Loading spinner -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="48dp"
+                    android:indeterminateTint="@color/text_primary"
+                    android:visibility="gone" />
+
+                <!-- Empty state -->
                 <LinearLayout
-                    android:id="@+id/ordersContainer"
+                    android:id="@+id/emptyStateCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:background="@drawable/surface_card"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="40dp">
+                    android:padding="40dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexend_medium"
                         android:text="No Active Orders"
-                        android:textColor="@color/text_muted"
-                        tools:ignore="HardcodedText" />
+                        android:textColor="@color/text_muted" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:fontFamily="@font/lexend_regular"
+                        android:text="Orders from buyers will appear here."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp" />
+
                 </LinearLayout>
+
+                <!-- Orders RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/ordersRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </ScrollView>
@@ -70,6 +100,7 @@
         <include
             android:id="@+id/navigation_bar"
             layout="@layout/layout_seller_navbar" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -56,6 +56,128 @@ public class SupabaseAuthService {
         public int totalItems = 0;
     }
 
+    // ─── Paste this inside SupabaseAuthService.java ───────────────────────────
+
+    public static class OrderDetail {
+        public String orderId;
+        public String status;
+        public double totalAmount;
+        public String createdAt;
+
+        // Buyer info
+        public String buyerFullName;
+
+        // Address fields
+        public String street;
+        public String barangay;
+        public String city;
+        public String postalCode;
+        public String country;
+
+        // Items
+        public List<OrderItemDetail> items = new ArrayList<>();
+    }
+
+    public static class OrderItemDetail {
+        public String menuItemName;
+        public int quantity;
+        public double unitPrice;
+    }
+
+    /**
+     * Fetches all orders for the currently logged-in seller, including:
+     *  - buyer profile (full_name)
+     *  - buyer_address (street, barangay, city, postal_code, country)
+     *  - order_items joined with menu_items (name, quantity, unit_price)
+     *
+     * RLS on the DB ensures only the seller's own orders are returned.
+     */
+    public List<OrderDetail> getSellerOrders(String token, String sellerId) {
+        List<OrderDetail> result = new ArrayList<>();
+        if (token == null || sellerId == null) return result;
+        try {
+            // Single query: join order_items→menu_items, buyer profile, and buyer_address
+            String query = "/rest/v1/orders"
+                    + "?seller_id=eq." + sellerId
+                    + "&select="
+                    + "id,"
+                    + "status,"
+                    + "total_amount,"
+                    + "created_at,"
+                    + "profile!orders_buyer_id_fkey(full_name),"
+                    + "buyer_address!orders_buyer_address_id_fkey(street,barangay,city,postal_code,country),"
+                    + "order_items(quantity,unit_price,menu_items(name))"
+                    + "&order=created_at.desc";
+
+            URL url = new URL(getBaseUrl() + query);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    OrderDetail od = new OrderDetail();
+
+                    od.orderId     = o.optString("id");
+                    od.status      = o.optString("status", "pending");
+                    od.totalAmount = o.optDouble("total_amount", 0);
+                    od.createdAt   = o.optString("created_at", "");
+
+                    // Buyer name via profile join
+                    if (!o.isNull("profile")) {
+                        JSONObject profile = o.getJSONObject("profile");
+                        od.buyerFullName = profile.optString("full_name", "Unknown Buyer");
+                    } else {
+                        od.buyerFullName = "Unknown Buyer";
+                    }
+
+                    // Buyer address via buyer_address join
+                    if (!o.isNull("buyer_address")) {
+                        JSONObject addr = o.getJSONObject("buyer_address");
+                        od.street     = addr.optString("street", "");
+                        od.barangay   = addr.optString("barangay", "");
+                        od.city       = addr.optString("city", "");
+                        od.postalCode = String.valueOf(addr.optInt("postal_code", 0));
+                        od.country    = addr.optString("country", "");
+                    }
+
+                    // Order items joined with menu_items
+                    if (!o.isNull("order_items")) {
+                        JSONArray itemsArr = o.getJSONArray("order_items");
+                        for (int j = 0; j < itemsArr.length(); j++) {
+                            JSONObject oi = itemsArr.getJSONObject(j);
+                            OrderItemDetail item = new OrderItemDetail();
+                            item.quantity  = oi.optInt("quantity", 1);
+                            item.unitPrice = oi.optDouble("unit_price", 0);
+
+                            if (!oi.isNull("menu_items")) {
+                                item.menuItemName = oi.getJSONObject("menu_items").optString("name", "Item");
+                            } else {
+                                item.menuItemName = "Item";
+                            }
+                            od.items.add(item);
+                        }
+                    }
+
+                    result.add(od);
+                }
+            } else {
+                Log.e(TAG, "getSellerOrders failed [" + code + "]: " + body);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "getSellerOrders error", e);
+        }
+        return result;
+    }
+
+
     public boolean isConfigured() {
         return !BuildConfig.SUPABASE_URL.isEmpty() && !BuildConfig.SUPABASE_ANON_KEY.isEmpty();
     }
