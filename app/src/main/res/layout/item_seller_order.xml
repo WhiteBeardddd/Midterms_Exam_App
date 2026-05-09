@@ -9,7 +9,6 @@
     android:padding="16dp"
     android:layout_marginBottom="16dp">
 
-    <!-- Header: Buyer name + Status badge -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

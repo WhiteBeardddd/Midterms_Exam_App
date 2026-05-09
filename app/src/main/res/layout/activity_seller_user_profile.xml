@@ -129,6 +129,31 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/lexend_semibold"
+                        android:text="Shop Description"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
+
+                    <EditText
+                        android:id="@+id/etDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/input_surface"
+                        android:hint="Describe your shop"
+                        android:inputType="textMultiLine"
+                        android:minLines="3"
+                        android:gravity="top"
+                        android:padding="14dp"
+                        android:textColor="@color/color_gray"
+                        android:textColorHint="@color/text_muted"
+                        tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/lexend_semibold"
                         android:text="Shop Address"
                         android:textColor="@color/white"
                         android:textSize="13sp"

@@ -7,6 +7,9 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.BuyerAddress;
@@ -29,7 +32,7 @@ public class AddressActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_address);
-
+        hideSystemUI();
         sessionManager = new SessionManager(this);
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
@@ -70,6 +73,20 @@ public class AddressActivity extends AppCompatActivity {
         });
     }
 
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     private void saveAddress() {
         String street = etStreet.getText().toString().trim();
         String barangay = etBarangay.getText().toString().trim();

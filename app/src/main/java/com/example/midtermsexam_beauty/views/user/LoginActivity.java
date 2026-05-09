@@ -11,7 +11,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Profile;
@@ -35,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        hideSystemUI();
         setContentView(R.layout.login_page);
         handleKeyboardOverlap();
         sessionManager = new SessionManager(this);
@@ -111,6 +114,20 @@ public class LoginActivity extends AppCompatActivity {
             v.setPadding(0, 0, 0, Math.max(imeHeight - navHeight, 0));
             return insets;
         });
+    }
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
     }
 
     @Override

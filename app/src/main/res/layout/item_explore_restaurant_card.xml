@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:src="@drawable/product_1"
+                android:src="@drawable/tarabytes"
                 tools:ignore="ContentDescription" />
         </androidx.cardview.widget.CardView>
 
@@ -65,42 +65,7 @@
                 tools:text="Fast Food • Burgers"
                 tools:ignore="HardcodedText" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/restaurant_rating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/lexend_semibold"
-                    android:textColor="@color/color_accent_orange"
-                    android:textSize="13sp"
-                    tools:text="4.8 ★"
-                    tools:ignore="HardcodedText" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:text="•"
-                    android:textColor="@color/text_muted"
-                    tools:ignore="HardcodedText" />
-
-                <TextView
-                    android:id="@+id/restaurant_delivery_info"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/lexend_medium"
-                    android:textColor="@color/color_accent_teal"
-                    android:textSize="13sp"
-                    tools:text="Free delivery"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

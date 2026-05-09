@@ -15,6 +15,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.midtermsexam_beauty.R;
@@ -67,7 +70,7 @@ public class SellerMenu extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seller_menu);
         SellerNavCard.setupNavbar(this);
-
+        hideSystemUI();
         rvMenu = findViewById(R.id.rvMenu);
         loader = findViewById(R.id.loader);
         emptyState = findViewById(R.id.emptyState);
@@ -278,6 +281,21 @@ public class SellerMenu extends AppCompatActivity {
         });
     }
 
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     // Extracts "authId/filename.jpg" from the full public URL
     private String extractPathFromUrl(String imageUrl) {
         try {

@@ -7,6 +7,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -36,7 +39,7 @@ public class CurrentOrders extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_orders);
         SellerNavCard.setupNavbar(this);
-
+        hideSystemUI();
         recyclerView   = findViewById(R.id.ordersRecyclerView);
         emptyStateCard = findViewById(R.id.emptyStateCard);
         progressBar    = findViewById(R.id.progressBar);
@@ -90,6 +93,20 @@ public class CurrentOrders extends AppCompatActivity {
             recyclerView.setVisibility(View.GONE);
             emptyStateCard.setVisibility(View.GONE);
         }
+    }
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
     }
 
     @Override

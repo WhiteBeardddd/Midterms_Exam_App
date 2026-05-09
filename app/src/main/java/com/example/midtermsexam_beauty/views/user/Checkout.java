@@ -9,6 +9,9 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.CheckOutCard;
@@ -43,14 +46,13 @@ public class Checkout extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
-
+        hideSystemUI();
         NavbarCard.setupNavbar(this);
 
         sessionManager = new SessionManager(this);
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
 
-        ImageButton toPrevious = findViewById(R.id.back_btn);
         cartListView = findViewById(R.id.cart_list);
         tvSubtotal = findViewById(R.id.tv_subtotal);
         tvTotal = findViewById(R.id.tv_total_price);
@@ -59,7 +61,6 @@ public class Checkout extends AppCompatActivity {
         checkOutAdapter = new CheckOutCard(this, productList);
         cartListView.setAdapter(checkOutAdapter);
 
-        toPrevious.setOnClickListener(view -> finish());
         btnPlaceOrder.setOnClickListener(v -> handleOrderPlacement());
     }
 
@@ -69,6 +70,15 @@ public class Checkout extends AppCompatActivity {
         loadCartData();
         updateTotalPrice();
         fetchUserAddress();
+    }
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        );
     }
 
     private void fetchUserAddress() {

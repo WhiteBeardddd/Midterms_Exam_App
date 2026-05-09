@@ -16,6 +16,7 @@ import java.util.List;
 public class Product {
     private final int imageID;
     private final String name;
+    private String address;
     private final String description;
     private final float price;
     private final String category;
@@ -25,33 +26,34 @@ public class Product {
     private int counter;
     private String sellerId;
     private String imageUrl;
-    private String shopName; // NEW
-    private String id; // NEW: Holds the Supabase menu_item_id
+    private String shopName;
+    private String id;
+    private String mutableDescription;
+    private String shopBackground;
 
     public Product(int imageID, String name, String description, float price, String category,
                    boolean availability, float rating, String skinType) {
-        this.imageID = imageID;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.category = category;
+        this.imageID      = imageID;
+        this.name         = name;
+        this.description  = description;
+        this.price        = price;
+        this.category     = category;
         this.availability = availability;
-        this.rating = rating;
-        this.skinType = skinType;
-        this.counter = 0;
+        this.rating       = rating;
+        this.skinType     = skinType;
+        this.counter      = 0;
     }
 
-    public int getImageID() { return imageID; }
-    public int getImageId() { return imageID; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public float getPrice() { return price; }
-    public String getCategory() { return category; }
-    public boolean getAvalability() { return availability; }
-    public boolean isAvailability() { return availability; }
-    public float getRating() { return rating; }
-    public String getSkin_type() { return skinType; }
-    public int getCounter() { return counter; }
+    public int getImageID()    { return imageID; }
+    public int getImageId()    { return imageID; }
+    public String getName()    { return name; }
+    public float getPrice()    { return price; }
+    public String getCategory(){ return category; }
+    public boolean getAvalability()  { return availability; }
+    public boolean isAvailability()  { return availability; }
+    public float getRating()         { return rating; }
+    public String getSkin_type()     { return skinType; }
+    public int getCounter()          { return counter; }
     public void setCounter(int counter) { this.counter = counter; }
 
     public String getSellerId() { return sellerId; }
@@ -62,10 +64,25 @@ public class Product {
 
     public String getShopName() { return shopName; }
     public void setShopName(String shopName) { this.shopName = shopName; }
-    private String shopBackground;
+
     public String getShopBackground() { return shopBackground; }
     public void setShopBackground(String shopBackground) { this.shopBackground = shopBackground; }
 
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getMutableDescription() { return mutableDescription; }
+    public void setDescription(String description) { this.mutableDescription = description; }
+
+    // Single getDescription() — prefers mutableDescription, falls back to constructor value
+    public String getDescription() {
+        return (mutableDescription != null && !mutableDescription.isEmpty())
+                ? mutableDescription
+                : description;
+    }
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     private static List<Product> loadMealsFromJSON(Context context, String fileName, String key) {
         List<Product> productList = new ArrayList<>();
@@ -81,17 +98,17 @@ public class Product {
             Resources res = context.getResources();
 
             for (int i = 0; i < mealsArray.length(); i++) {
-                JSONObject obj = mealsArray.getJSONObject(i);
-                int imageID = res.getIdentifier(obj.getString("imageID"), "drawable", context.getPackageName());
-                String name = obj.getString("name");
-                float price = (float) obj.getDouble("price");
-                String description = obj.getString("description");
-                String category = obj.getString("category");
-                boolean availability = obj.getBoolean("availability");
-                float rating = (float) obj.optDouble("rating", availability ? 4.8 : 4.2);
-                String skinType = obj.optString("skin_type", availability ? "Available now" : "Unavailable");
+                JSONObject obj    = mealsArray.getJSONObject(i);
+                int imageID       = res.getIdentifier(obj.getString("imageID"), "drawable", context.getPackageName());
+                String name       = obj.getString("name");
+                float price       = (float) obj.getDouble("price");
+                String desc       = obj.getString("description");
+                String category   = obj.getString("category");
+                boolean avail     = obj.getBoolean("availability");
+                float rating      = (float) obj.optDouble("rating", avail ? 4.8 : 4.2);
+                String skinType   = obj.optString("skin_type", avail ? "Available now" : "Unavailable");
 
-                productList.add(new Product(imageID, name, description, price, category, availability, rating, skinType));
+                productList.add(new Product(imageID, name, desc, price, category, avail, rating, skinType));
             }
         } catch (IOException | JSONException e) { e.printStackTrace(); }
         return productList;
@@ -100,6 +117,4 @@ public class Product {
     public static List<Product> getMeals(Context context, String fromWhere) {
         return loadMealsFromJSON(context, "meals.json", fromWhere);
     }
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
 }

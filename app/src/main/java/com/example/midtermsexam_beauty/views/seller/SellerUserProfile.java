@@ -12,6 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
@@ -26,8 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class SellerUserProfile extends AppCompatActivity {
-
-    private EditText etFullName, etPhone, etStoreName, etAddress;
+    // Add with other EditText declarations at the top
+    private EditText etFullName, etPhone, etStoreName, etAddress, etDescription;
     private SwitchMaterial switchIsSeller;
     private ImageButton settingBtn, favBtn, addressBtn;
     private Button btnSave, btnLogout;
@@ -39,7 +42,7 @@ public class SellerUserProfile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seller_user_profile);
-
+        hideSystemUI();
         session = new SessionManager(this);
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
@@ -48,6 +51,7 @@ public class SellerUserProfile extends AppCompatActivity {
 
         etFullName = findViewById(R.id.etFullName);
         etPhone = findViewById(R.id.etPhone);
+        etDescription = findViewById(R.id.etDescription);
         etStoreName = findViewById(R.id.etStoreName);
         etAddress = findViewById(R.id.etAddress);
         switchIsSeller = findViewById(R.id.switchIsSeller);
@@ -80,33 +84,25 @@ public class SellerUserProfile extends AppCompatActivity {
 
     private void loadProfile() {
         executor.execute(() -> {
-            String token  = session.getToken();
-            String userId = session.getUserId();
+            String token     = session.getToken();
+            String userId    = session.getUserId();
             String profileId = session.getProfileId();
 
-            Log.d("SellerProfile", "token: " + token);
-            Log.d("SellerProfile", "userId: " + userId);
-            Log.d("SellerProfile", "profileId: " + profileId);
+            Profile profile  = authService.getProfile(token, userId);
 
-            Profile profile = authService.getProfile(token, userId);
-
-            Log.d("SellerProfile", "profile null? " + (profile == null));
-            if (profile != null) {
-                Log.d("SellerProfile", "fullName: " + profile.getFullName());
-                Log.d("SellerProfile", "phone: " + profile.getPhone());
-                Log.d("SellerProfile", "profileId from profile: " + profile.getId());
-            }
-
-            String storeName = "";
-            String address   = "";
+            String storeName    = "";
+            String address      = "";
+            String description  = "";
 
             if (profile != null && profile.getId() != null) {
-                storeName = authService.getStoreName(token, profile.getId());
-                address   = authService.getAddress(token, profile.getId());
+                storeName   = authService.getStoreName(token, profile.getId());
+                address     = authService.getAddress(token, profile.getId());
+                description = authService.getDescription(token, profile.getId());
             }
 
-            String finalStoreName = storeName;
-            String finalAddress   = address;
+            String finalStoreName   = storeName;
+            String finalAddress     = address;
+            String finalDescription = description;
 
             if (profile != null) {
                 runOnUiThread(() -> {
@@ -114,18 +110,34 @@ public class SellerUserProfile extends AppCompatActivity {
                     etPhone.setText(profile.getPhone());
                     etStoreName.setText(finalStoreName);
                     etAddress.setText(finalAddress);
+                    etDescription.setText(finalDescription);
                     switchIsSeller.setChecked(profile.isSeller());
                 });
             }
         });
     }
 
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     private void saveProfile() {
-        String fullName  = etFullName.getText().toString().trim();
-        String phone     = etPhone.getText().toString().trim();
-        boolean isSeller = switchIsSeller.isChecked();
-        String storeName = etStoreName.getText().toString().trim();
-        String address   = etAddress.getText().toString().trim();
+        String fullName    = etFullName.getText().toString().trim();
+        String phone       = etPhone.getText().toString().trim();
+        boolean isSeller   = switchIsSeller.isChecked();
+        String storeName   = etStoreName.getText().toString().trim();
+        String address     = etAddress.getText().toString().trim();
+        String description = etDescription.getText().toString().trim();
 
         if (session.getToken() == null || session.getUserId() == null) {
             Toast.makeText(this, "Session expired. Please log in again.", Toast.LENGTH_SHORT).show();
@@ -133,30 +145,27 @@ public class SellerUserProfile extends AppCompatActivity {
             return;
         }
 
-//        if (fullName.isEmpty()) { etFullName.setError("Name is required"); etFullName.requestFocus(); return; }
-//        if (storeName.isEmpty()) { etStoreName.setError("Store name is required"); etStoreName.requestFocus(); return; }
-
         btnSave.setEnabled(false);
         executor.execute(() -> {
-            // ✅ Fetch existing avatar_url so we don't wipe it on save
             Profile existing = authService.getProfile(session.getToken(), session.getUserId());
             String existingAvatarUrl = existing != null ? existing.getAvatarUrl() : "";
 
             boolean profileSuccess = authService.updateProfile(
                     session.getToken(), session.getUserId(),
-                    fullName, phone, isSeller,
-                    existingAvatarUrl  // ✅ was "" before — that was wiping it
+                    fullName, phone, isSeller, existingAvatarUrl
             );
 
-            boolean storeSuccess   = true;
-            boolean addressSuccess = true;
+            boolean storeSuccess       = true;
+            boolean addressSuccess     = true;
+            boolean descriptionSuccess = true;
 
             if (profileSuccess) {
-                storeSuccess   = authService.saveStoreName(session.getToken(), session.getProfileId(), storeName);
-                addressSuccess = authService.saveAddress(session.getToken(), session.getProfileId(), address);
+                storeSuccess       = authService.saveStoreName(session.getToken(), session.getProfileId(), storeName);
+                addressSuccess     = authService.saveAddress(session.getToken(), session.getProfileId(), address);
+                descriptionSuccess = authService.saveDescription(session.getToken(), session.getProfileId(), description);
             }
 
-            boolean finalSuccess = profileSuccess && storeSuccess && addressSuccess;
+            boolean finalSuccess = profileSuccess && storeSuccess && addressSuccess && descriptionSuccess;
 
             runOnUiThread(() -> {
                 btnSave.setEnabled(true);

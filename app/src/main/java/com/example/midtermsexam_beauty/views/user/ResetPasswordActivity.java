@@ -8,6 +8,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.MainActivity;
 import com.example.midtermsexam_beauty.R;
@@ -29,7 +32,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
-
+        hideSystemUI();
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
 
@@ -59,6 +62,20 @@ public class ResetPasswordActivity extends AppCompatActivity {
         btnSavePassword.setOnClickListener(v -> saveNewPassword());
     }
 
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     private void saveNewPassword() {
         String newPass = etNewPassword.getText().toString().trim();
         String confirmPass = etConfirmPassword.getText().toString().trim();

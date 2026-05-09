@@ -10,6 +10,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
@@ -39,7 +43,7 @@ public class UserProfile extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
-
+        hideSystemUI();
         session = new SessionManager(this);
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
@@ -152,6 +156,21 @@ public class UserProfile extends AppCompatActivity {
     protected void onDestroy() {
         if (executor != null) executor.shutdown();
         super.onDestroy();
+    }
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
     }
 
     private void setupDropdown(int headerId, int contentId, int arrowId) {

@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -75,48 +74,47 @@ public class SellerCard extends RecyclerView.Adapter<SellerCard.ViewHolder> {
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            bgImg = itemView.findViewById(R.id.seller_bgimg);
-            pfpImg = itemView.findViewById(R.id.seller_pfpimg);
-
-            shopName = itemView.findViewById(R.id.seller_shopname);
-            address = itemView.findViewById(R.id.seller_address);
-            description = itemView.findViewById(R.id.seller_description);
-            isOpen = itemView.findViewById(R.id.seller_isopen);
+            bgImg        = itemView.findViewById(R.id.seller_bgimg);
+            pfpImg       = itemView.findViewById(R.id.seller_pfpimg);
+            shopName     = itemView.findViewById(R.id.seller_shopname);
+            address      = itemView.findViewById(R.id.seller_address);
+            description  = itemView.findViewById(R.id.seller_description);
+            isOpen       = itemView.findViewById(R.id.seller_isopen);
         }
 
         public void bind(
                 SellerProfile seller,
                 OnItemClickListener listener
         ) {
+            // Shop name
+            String name = seller.getStoreName();
+            shopName.setText((name != null && !name.isEmpty()) ? name : "");
 
-            shopName.setText(seller.getStoreName());
+            // Address — guard against null so it never shows "null"
+            String addr = seller.getAddress();
+            address.setText((addr != null && !addr.isEmpty()) ? addr : "");
 
-            address.setText(seller.getAddress());
+            // Description — same guard
+            String desc = seller.getDescription();
+            description.setText((desc != null && !desc.isEmpty()) ? desc : "");
 
-            description.setText(seller.getDescription());
+            // Open / Closed badge
+            isOpen.setText(seller.isOpen() ? "Open" : "Closed");
 
-            isOpen.setText(
-                    seller.isOpen()
-                            ? "Open"
-                            : "Closed"
-            );
-
-            // AVATAR
+            // Avatar
             Glide.with(itemView.getContext())
                     .load(seller.getSellerAvatarUrl())
                     .placeholder(R.drawable.tarabytes)
                     .into(pfpImg);
 
-            // BACKGROUND
+            // Background
             Glide.with(itemView.getContext())
                     .load(seller.getSellerProfileBg())
                     .placeholder(R.drawable._61858385_3853680348107377_8038201137559404165_n)
                     .into(bgImg);
 
-            itemView.setOnClickListener(v -> {
-                listener.onClick(seller);
-            });
+            // Click listener
+            itemView.setOnClickListener(v -> listener.onClick(seller));
         }
     }
 }

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:fontFamily="@font/lexend_semibold"
-        android:text="5.0 (61)"
+        android:text="5.0"
         android:textColor="@color/status_warning"
         android:textSize="14sp"
         tools:ignore="HardcodedText" />

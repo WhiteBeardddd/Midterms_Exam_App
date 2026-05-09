@@ -26,18 +26,9 @@
                 android:adjustViewBounds="true"
                 android:background="@drawable/surface_card_soft"
                 android:scaleType="centerCrop"
-                android:src="@drawable/product_1"
+                android:src="@drawable/tarabytes"
                 tools:ignore="ContentDescription" />
 
-            <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="top|end"
-                android:layout_margin="10dp"
-                android:background="@drawable/icon_button_bg"
-                android:padding="8dp"
-                android:src="@drawable/heart_icon"
-                tools:ignore="ContentDescription" />
         </FrameLayout>
 
         <LinearLayout
@@ -49,8 +40,8 @@
 
             <TextView
                 android:id="@+id/product_name"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="71dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/lexend_bold"
                 android:maxLines="2"
@@ -64,16 +55,7 @@
                 layout="@layout/layout_rating_badge" />
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/product_meta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:fontFamily="@font/lexend_regular"
-            android:text="From 22 min - Fast Food"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            tools:ignore="HardcodedText" />
+
 
         <TextView
             android:id="@+id/product_description"
@@ -115,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:fontFamily="@font/lexend_regular"
-                android:text="Open now"
+                android:text="Price"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 tools:ignore="HardcodedText" />

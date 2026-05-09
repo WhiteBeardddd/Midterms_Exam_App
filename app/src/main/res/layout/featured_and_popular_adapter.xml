@@ -23,7 +23,7 @@
             android:background="@drawable/surface_card_soft"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/product_1"
+            android:src="@drawable/tarabytes"
             tools:ignore="ContentDescription" />
 
         <LinearLayout

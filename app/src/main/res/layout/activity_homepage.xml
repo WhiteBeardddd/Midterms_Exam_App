@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -15,53 +16,8 @@
 
         <include layout="@layout/layout_top_brand_header" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/color_dark_bg"
-            android:paddingStart="16dp"
-            android:paddingTop="12dp"
-            android:paddingEnd="16dp"
-            android:paddingBottom="8dp">
-
-            <LinearLayout
-                android:id="@+id/homepage_search_bar"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@drawable/input_surface"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp">
-
-                <ImageView
-                    android:id="@+id/search_bar_icon"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_marginEnd="8dp"
-                    android:tint="@color/text_muted"
-                    app:srcCompat="@android:drawable/ic_menu_search"
-                    tools:ignore="ContentDescription" />
-
-                <EditText
-                    android:id="@+id/searchEditText"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@null"
-                    android:gravity="center_vertical"
-                    android:hint="Search meals, drinks, and nearby favorites"
-                    android:paddingTop="0dp"
-                    android:paddingBottom="0dp"
-                    android:singleLine="true"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
-                    android:textSize="14sp"
-                    tools:ignore="HardcodedText" />
-            </LinearLayout>
-        </LinearLayout>
-
         <androidx.core.widget.NestedScrollView
+            android:id="@+id/nestedScrollView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -71,23 +27,69 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingBottom="18dp">
+                android:paddingBottom="24dp">
 
+                <!-- ── Search Bar ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:background="@drawable/surface_card_soft"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="12dp">
+
+                        <!-- Search icon placeholder -->
+                        <TextView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:text="🔍"
+                            android:textSize="16sp"
+                            android:gravity="center" />
+
+                        <EditText
+                            android:id="@+id/searchEditText"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:fontFamily="@font/lexend_regular"
+                            android:hint="Search meals, restaurants…"
+                            android:textColorHint="@color/text_muted"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp"
+                            android:paddingStart="10dp"
+                            android:imeOptions="actionSearch"
+                            android:inputType="text"
+                            android:singleLine="true" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- ── Hero Banner ── -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingStart="16dp"
-                    android:paddingTop="8dp"
+                    android:paddingTop="10dp"
                     android:paddingEnd="16dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="130dp"
                         android:background="@drawable/hero_gradient_card"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:padding="18dp">
+                        android:padding="20dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -98,23 +100,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:background="@drawable/pill_green"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="10dp"
-                                android:paddingTop="6dp"
-                                android:paddingEnd="10dp"
-                                android:paddingBottom="6dp"
-                                android:text="Featured today"
-                                android:textColor="@color/white"
-                                android:textSize="11sp"
+                                android:fontFamily="@font/lexend_regular"
+                                android:text="TODAY'S PICKS"
+                                android:textColor="#A8FFD0"
+                                android:textSize="10sp"
+                                android:letterSpacing="0.15"
                                 tools:ignore="HardcodedText" />
 
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="12dp"
+                                android:layout_marginTop="4dp"
                                 android:fontFamily="@font/lexend_black"
-                                android:text="Well-loved featured shops, ready when users open the app."
+                                android:text="Cravings delivered, fast."
                                 android:textColor="@color/white"
                                 android:textSize="20sp"
                                 tools:ignore="HardcodedText" />
@@ -122,129 +120,166 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_marginTop="6dp"
                                 android:fontFamily="@font/lexend_regular"
-                                android:text="Static for now, structured so you can swap in ranking later."
-                                android:textColor="#EAFBF0"
-                                android:textSize="12sp"
+                                android:text="Fresh meals from nearby restaurants."
+                                android:textColor="#CCFBE8"
+                                android:textSize="11sp"
                                 tools:ignore="HardcodedText" />
                         </LinearLayout>
 
                         <ImageView
-                            android:layout_width="78dp"
-                            android:layout_height="78dp"
-                            android:layout_marginStart="14dp"
+                            android:layout_width="72dp"
+                            android:layout_height="72dp"
+                            android:layout_marginStart="12dp"
                             android:src="@drawable/tarabytes"
                             tools:ignore="ContentDescription" />
                     </LinearLayout>
+                </LinearLayout>
 
-                    <HorizontalScrollView
-                        android:layout_width="match_parent"
+                <!-- ── Category Pills ── -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:scrollbars="none"
+                    android:clipToPadding="false">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:scrollbars="none">
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                        <LinearLayout
+                        <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/surface_card_soft"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
+                            android:text="🍔  Burgers"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/surface_card_soft"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
+                            android:text="🍕  Pizza"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/surface_card_soft"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
+                            android:text="🌅  Breakfast"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/surface_card_soft"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
+                            android:text="🍮  Desserts"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/surface_card_soft"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:paddingStart="16dp"
+                            android:paddingTop="10dp"
+                            android:paddingEnd="16dp"
+                            android:paddingBottom="10dp"
+                            android:text="🧃  Drinks"
+                            android:textColor="@color/text_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <!-- ── Top Picks Section ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="24dp"
+                    android:paddingEnd="16dp">
+
+                    <!-- Section header row -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:background="@drawable/surface_card_soft"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="14dp"
-                                android:paddingTop="9dp"
-                                android:paddingEnd="14dp"
-                                android:paddingBottom="9dp"
-                                android:text="Burgers"
+                                android:fontFamily="@font/lexend_black"
+                                android:text="Top Picks"
                                 android:textColor="@color/text_primary"
-                                android:textSize="12sp"
+                                android:textSize="22sp"
                                 tools:ignore="HardcodedText" />
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:background="@drawable/surface_card_soft"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="14dp"
-                                android:paddingTop="9dp"
-                                android:paddingEnd="14dp"
-                                android:paddingBottom="9dp"
-                                android:text="Pizza"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                tools:ignore="HardcodedText" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:background="@drawable/surface_card_soft"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="14dp"
-                                android:paddingTop="9dp"
-                                android:paddingEnd="14dp"
-                                android:paddingBottom="9dp"
-                                android:text="Breakfast"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                tools:ignore="HardcodedText" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:background="@drawable/surface_card_soft"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="14dp"
-                                android:paddingTop="9dp"
-                                android:paddingEnd="14dp"
-                                android:paddingBottom="9dp"
-                                android:text="Desserts"
-                                android:textColor="@color/text_primary"
-                                android:textSize="12sp"
-                                tools:ignore="HardcodedText" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:background="@drawable/surface_card_soft"
-                                android:fontFamily="@font/lexend_semibold"
-                                android:paddingStart="14dp"
-                                android:paddingTop="9dp"
-                                android:paddingEnd="14dp"
-                                android:paddingBottom="9dp"
-                                android:text="Drinks"
-                                android:textColor="@color/text_primary"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/lexend_regular"
+                                android:text="Crowd-favorite meals you'll love"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="12sp"
                                 tools:ignore="HardcodedText" />
                         </LinearLayout>
-                    </HorizontalScrollView>
 
-                    <TextView
-                        android:id="@+id/featured_products_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
-                        android:fontFamily="@font/lexend_black"
-                        android:text="Featured Shops"
-                        android:textColor="@color/text_primary"
-                        android:textSize="24sp"
-                        tools:ignore="HardcodedText" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/lexend_regular"
-                        android:text="Always-visible restaurants you want users to discover first."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:text="See all →"
+                            android:textColor="@color/color_primary"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText" />
+                    </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/featured_recycler"
@@ -254,41 +289,131 @@
                         android:clipToPadding="false"
                         android:nestedScrollingEnabled="false"
                         android:paddingBottom="4dp" />
+                </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/popular_products_text"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
-                        android:fontFamily="@font/lexend_black"
-                        android:text="Explore restaurants nearby"
-                        android:textColor="@color/text_primary"
-                        android:textSize="24sp"
-                        tools:ignore="HardcodedText" />
+                <!-- ── Nearby Restaurants Section ── -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="28dp"
+                    android:paddingEnd="16dp">
 
-                    <TextView
+                    <!-- Section header row -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:fontFamily="@font/lexend_regular"
-                        android:text="Scroll down through nearby restaurants and compare them quickly."
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        tools:ignore="HardcodedText" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/lexend_black"
+                                android:text="Restaurants Nearby"
+                                android:textColor="@color/text_primary"
+                                android:textSize="22sp"
+                                tools:ignore="HardcodedText" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/lexend_regular"
+                                android:text="Browse and order from local spots"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp"
+                                tools:ignore="HardcodedText" />
+                        </LinearLayout>
+
+                        <!-- Page indicator -->
+                        <TextView
+                            android:id="@+id/tvPageIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/lexend_regular"
+                            android:textColor="@color/text_muted"
+                            android:textSize="11sp"
+                            tools:text="1 / 3" />
+                    </LinearLayout>
+
+                    <!-- Restaurant list -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/popular_recycler"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         android:nestedScrollingEnabled="false" />
+
+                    <!-- Loading spinner (shown while fetching next page) -->
+                    <ProgressBar
+                        android:id="@+id/paginationProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/color_primary"
+                        android:visibility="gone" />
+
+                    <!-- Load More button -->
+                    <LinearLayout
+                        android:id="@+id/btnLoadMore"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/surface_card_soft"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/lexend_semibold"
+                            android:text="Load more restaurants"
+                            android:textColor="@color/color_primary"
+                            android:textSize="13sp"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:text="↓"
+                            android:textColor="@color/color_primary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <!-- End of list label -->
+                    <TextView
+                        android:id="@+id/tvEndOfList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/lexend_regular"
+                        android:gravity="center"
+                        android:text="You've seen all nearby restaurants"
+                        android:textColor="@color/text_muted"
+                        android:textSize="12sp"
+                        android:visibility="gone"
+                        tools:ignore="HardcodedText" />
+
                 </LinearLayout>
+
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 
         <include
             android:id="@+id/navigation_bar"
             layout="@layout/layout_navbar" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

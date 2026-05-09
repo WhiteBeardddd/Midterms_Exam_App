@@ -8,6 +8,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.midtermsexam_beauty.R;
@@ -33,7 +36,7 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu_item_details);
-
+        hideSystemUI();
         ImageButton btnClose = findViewById(R.id.btn_close);
         ImageButton btnMinus = findViewById(R.id.btn_minus);
         ImageButton btnPlus = findViewById(R.id.btn_plus);
@@ -81,6 +84,20 @@ public class MenuItemDetailsActivity extends AppCompatActivity {
         btnAddToCart.setOnClickListener(v -> addToCartAndFinish());
     }
 
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     private void updateCartButton() {
         tvQuantity.setText(String.valueOf(currentQuantity));
         double totalPrice = basePrice * currentQuantity;

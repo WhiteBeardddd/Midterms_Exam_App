@@ -8,6 +8,9 @@ import android.widget.ListView;
 import android.text.TextWatcher;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
@@ -31,7 +34,7 @@ public class PopularProducts extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_popular_products);
-
+        hideSystemUI();
         NavbarCard.setupNavbar(this);
 
         ListView popularListView = findViewById(R.id.popular_recycler);
@@ -109,6 +112,21 @@ public class PopularProducts extends AppCompatActivity {
         });
     }
 
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
     private void openProductDetails(Product product) {
         Intent intent = new Intent(this, MenuItemDetailsActivity.class);
         intent.putExtra("item_name", product.getName());

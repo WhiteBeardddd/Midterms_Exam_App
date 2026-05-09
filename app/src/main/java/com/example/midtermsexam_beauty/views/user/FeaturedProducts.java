@@ -64,7 +64,7 @@ public class FeaturedProducts extends AppCompatActivity {
     }
 
     private void openProductDetails(Product product) {
-        Intent intent = new Intent(this, ViewProductDetails.class);
+        Intent intent = new Intent(this, ViewShop.class);
         intent.putExtra("imageId", product.getImageID());
         intent.putExtra("name", product.getName());
         intent.putExtra("price", product.getPrice());

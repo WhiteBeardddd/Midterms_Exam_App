@@ -483,7 +483,7 @@ public class SupabaseAuthService {
         List<Product> shops = new ArrayList<>();
         if (token == null) return shops;
         try {
-            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,seller_avatar_url,seller_profile_bg,profile(full_name)");
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?select=id,store_name,description,address,seller_avatar_url,seller_profile_bg,profile(full_name)");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
@@ -520,6 +520,8 @@ public class SupabaseAuthService {
                     shop.setShopName(sellerUsername);
                     shop.setShopBackground(obj.optString("seller_profile_bg", ""));// seller's real name as subtitle
                     shops.add(shop);
+                    shop.setDescription(obj.optString("description", ""));
+                    shop.setAddress(obj.optString("address", "No address available"));
                 }
             }
         } catch (Exception e) { Log.e(TAG, "getAllShops error", e); }
@@ -1212,9 +1214,12 @@ public class SupabaseAuthService {
                 }
             }
 
-        } catch (Exception e) { Log.e(TAG, "getFeaturedShops", e); }
+        } catch (Exception e) {
+            Log.e(TAG, "getFeaturedShops", e);
+        }
 
         return shops;
+    }
 
     public boolean saveSellerAvatarUrl(String token, String profileId, String avatarUrl) {
         if (token == null || profileId == null) return false;
@@ -1299,8 +1304,6 @@ public class SupabaseAuthService {
         return "";
     }
 
-    // --- NEW: Send Password Reset Email ---
-// --- UPGRADED: Send Password Reset Email ---
     public AuthResult sendPasswordResetEmail(String email) {
         try {
             JSONObject payload = new JSONObject().put("email", email);
@@ -1330,5 +1333,52 @@ public class SupabaseAuthService {
             Log.e(TAG, "sendPasswordResetEmail error", e);
             return new AuthResult(false, e.getMessage(), null, null);
         }
+    }
+
+    public String getDescription(String token, String profileId) {
+        try {
+            URL url = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=description");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                if (arr.length() > 0) return arr.getJSONObject(0).optString("description", "");
+            }
+        } catch (Exception e) { Log.e(TAG, "getDescription error", e); }
+        return "";
+    }
+
+    public boolean saveDescription(String token, String profileId, String description) {
+        if (token == null || profileId == null) return false;
+        try {
+            URL checkUrl = new URL(getBaseUrl() + "/rest/v1/seller_profiles?profile_id=eq." + profileId + "&select=id");
+            HttpURLConnection checkConn = (HttpURLConnection) checkUrl.openConnection();
+            checkConn.setRequestMethod("GET");
+            checkConn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            checkConn.setRequestProperty("Authorization", "Bearer " + token);
+            int checkCode = checkConn.getResponseCode();
+            String checkBody = readStream(checkCode < 300 ? checkConn.getInputStream() : checkConn.getErrorStream());
+            checkConn.disconnect();
+
+            JSONArray arr = new JSONArray(checkBody);
+            JSONObject payload = new JSONObject()
+                    .put("profile_id", profileId)
+                    .put("description", description != null ? description : "");
+
+            if (arr.length() > 0) {
+                String existingId = arr.getJSONObject(0).getString("id");
+                return patch("/rest/v1/seller_profiles?id=eq." + existingId, payload.toString(), token);
+            } else {
+                payload.put("is_open", true);
+                HttpResponse res = post("/rest/v1/seller_profiles", payload.toString(), token);
+                return res.statusCode >= 200 && res.statusCode < 300;
+            }
+        } catch (Exception e) { Log.e(TAG, "saveDescription error", e); }
+        return false;
     }
 }

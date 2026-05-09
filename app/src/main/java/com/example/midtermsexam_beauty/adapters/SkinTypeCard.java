@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.OldProduct;
-import com.example.midtermsexam_beauty.views.user.ViewProductDetails;
+import com.example.midtermsexam_beauty.views.user.ViewShop;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +80,7 @@ public class SkinTypeCard extends RecyclerView.Adapter<SkinTypeCard.ViewHolder> 
             productSkinType.setText("Skin Type: " + product.getSkin_type());
 
             itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, ViewProductDetails.class);
+                Intent intent = new Intent(context, ViewShop.class);
                 intent.putExtra("imageId", product.getImageId());
                 intent.putExtra("name", product.getName());
                 intent.putExtra("price", product.getPrice());
