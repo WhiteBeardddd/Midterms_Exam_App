@@ -15,7 +15,6 @@
         android:theme="@style/Theme.MidtermsExam_Beauty"
         tools:targetApi="31" >
 
-        <!-- User Activities -->
         <activity
             android:name=".MainActivity"
             android:exported="true" >
@@ -34,12 +33,22 @@
         <activity android:name=".views.user.LoginActivity" android:exported="false" />
         <activity android:name=".views.user.RegisterActivity" android:exported="false" />
         <activity android:name=".views.user.AddressActivity" android:exported="false" />
-        <!-- NEWLY ADDED ACTIVITIES -->
+
         <activity android:name=".views.user.SettingsActivity" android:exported="false" />
         <activity android:name=".views.user.ViewShopActivity" android:exported="false" />
         <activity android:name=".views.user.MenuItemDetailsActivity" />
         <activity android:name=".views.user.MyOrdersActivity" android:exported="false" />
-        <!-- Seller Activities -->
+
+        <activity android:name=".views.user.ForgotPasswordActivity" android:exported="false" />
+        <activity android:name=".views.user.ResetPasswordActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="midtermsapp" android:host="reset" />
+            </intent-filter>
+        </activity>
+
         <activity android:name=".views.seller.SellerDashboard" android:exported="false" />
         <activity android:name=".views.seller.SellerMenu" android:exported="false" />
         <activity android:name=".views.seller.CurrentOrders" android:exported="false" />

@@ -1199,4 +1199,30 @@ public class SupabaseAuthService {
         } catch (Exception e) { Log.e(TAG, "getSellerAvatarUrlBySellerId error", e); }
         return "";
     }
+
+    // --- NEW: Send Password Reset Email ---
+    public boolean sendPasswordResetEmail(String email) {
+        try {
+            JSONObject payload = new JSONObject().put("email", email);
+
+            URL url = new URL(getBaseUrl() + "/auth/v1/recover");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(payload.toString().getBytes(StandardCharsets.UTF_8));
+            }
+
+            int code = conn.getResponseCode();
+            conn.disconnect();
+
+            return code >= 200 && code < 300;
+        } catch (Exception e) {
+            Log.e(TAG, "sendPasswordResetEmail error", e);
+            return false;
+        }
+    }
 }

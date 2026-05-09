@@ -61,7 +61,6 @@
                 android:textColor="#9E9E9E"
                 android:textSize="14sp" />
 
-            <!-- Accent divider -->
             <View
                 android:layout_width="50dp"
                 android:layout_height="3dp"
@@ -111,13 +110,18 @@
                 android:stateListAnimator="@null" />
 
             <TextView
+                android:id="@+id/tvForgotPassword"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
+                android:padding="8dp"
                 android:text="Forgot Password?"
                 android:textColor="#00C853"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>

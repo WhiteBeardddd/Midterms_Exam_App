@@ -1,9 +1,11 @@
 package com.example.midtermsexam_beauty.views.user;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,6 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etUsername, etPassword;
     private Button btnLoginSubmit;
     private ImageButton btnBack;
+    private TextView tvForgotPassword;
     private SupabaseAuthService authService;
     private ExecutorService executor;
     private SessionManager sessionManager;
@@ -44,9 +47,17 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.passwordEditText);
         btnLoginSubmit = findViewById(R.id.loginButton);
         btnBack = findViewById(R.id.back_btn);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword); // Hooked up the new TextView
         etUsername.setHint("Email");
 
         btnBack.setOnClickListener(v -> finish());
+
+        // --- NEW: Forgot Password Routing ---
+        tvForgotPassword.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
+        // ------------------------------------
 
         btnLoginSubmit.setOnClickListener(v -> {
             String email = etUsername.getText().toString().trim();
