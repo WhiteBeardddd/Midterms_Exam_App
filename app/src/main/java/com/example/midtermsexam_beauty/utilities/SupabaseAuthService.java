@@ -501,15 +501,15 @@ public class SupabaseAuthService {
                     String shopName = "Unnamed Shop";
                     if (obj.has("store_name") && !obj.isNull("store_name") && !obj.getString("store_name").isEmpty()) {
                         shopName = obj.optString("store_name", shopName);
-                    } else if (obj.has("profile") && !obj.isNull("profile")) {
-                        shopName = obj.getJSONObject("profile").optString("full_name", shopName);
+                    } else {
+                        String profileName = extractProfileFullName(obj.opt("profile"), "");
+                        if (!profileName.isEmpty()) {
+                            shopName = profileName;
+                        }
                     }
 
                     // ✅ Seller username from profile join
-                    String sellerUsername = "";
-                    if (obj.has("profile") && !obj.isNull("profile")) {
-                        sellerUsername = obj.getJSONObject("profile").optString("full_name", "");
-                    }
+                    String sellerUsername = extractProfileFullName(obj.opt("profile"), "");
 
                     // ✅ Avatar from seller_profiles.seller_avatar_url
                     String avatarUrl = obj.optString("seller_avatar_url", "");
@@ -549,16 +549,10 @@ public class SupabaseAuthService {
 
                 for (int i = 0; i < Math.min(jsonList.size(), 20); i++) {
                     JSONObject obj = jsonList.get(i);
-                    String shopName = "Unknown Shop";
-
-                    if (obj.has("seller_profiles") && !obj.isNull("seller_profiles")) {
-                        JSONObject sp = obj.getJSONObject("seller_profiles");
-                        if (sp.has("store_name") && !sp.isNull("store_name") && !sp.getString("store_name").isEmpty()) {
-                            shopName = sp.getString("store_name");
-                        } else if (sp.has("profile") && !sp.isNull("profile")) {
-                            shopName = sp.getJSONObject("profile").optString("full_name", shopName);
-                        }
-                    }
+                    String shopName = extractShopNameFromSellerProfiles(
+                            obj.opt("seller_profiles"),
+                            "Unknown Shop"
+                    );
 
                     Product product = new Product(
                             R.drawable.product_1,
@@ -582,6 +576,63 @@ public class SupabaseAuthService {
                 }
             }
         } catch (Exception e) { Log.e(TAG, "getRandomMenuItems error", e); }
+        return items;
+    }
+
+    public List<Product> getTopPickMenuItems(String token) {
+        List<Product> items = new ArrayList<>();
+        if (token == null) return items;
+        try {
+            URL url = new URL(
+                    getBaseUrl()
+                            + "/rest/v1/menu_items"
+                            + "?select=*,seller_profiles(store_name,profile(full_name))"
+                            + "&is_available=eq.true"
+                            + "&order=created_at.asc"
+            );
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                java.util.HashSet<String> seenSellerIds = new java.util.HashSet<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    String sellerId = obj.optString("seller_id", "");
+                    if (sellerId.isEmpty() || seenSellerIds.contains(sellerId)) continue;
+
+                    String shopName = extractShopNameFromSellerProfiles(
+                            obj.opt("seller_profiles"),
+                            "Unknown Shop"
+                    );
+
+                    Product product = new Product(
+                            R.drawable.product_1,
+                            obj.getString("name"),
+                            obj.optString("description", ""),
+                            (float) obj.optDouble("price", 0.0),
+                            obj.optString("category", "Food"),
+                            true,
+                            4.8f,
+                            shopName
+                    );
+                    product.setSellerId(sellerId);
+                    product.setId(obj.optString("id", ""));
+                    product.setImageUrl(obj.optString("image_url", ""));
+                    product.setShopName(shopName);
+                    items.add(product);
+                    seenSellerIds.add(sellerId);
+
+                    if (items.size() >= 20) break;
+                }
+            }
+        } catch (Exception e) { Log.e(TAG, "getTopPickMenuItems error", e); }
         return items;
     }
 
@@ -632,17 +683,10 @@ public class SupabaseAuthService {
                 for (int i = 0; i < arr.length(); i++) {
                     JSONObject obj = arr.getJSONObject(i);
 
-                    String shopName = "Unknown Shop";
-
-                    if (obj.has("seller_profiles") && !obj.isNull("seller_profiles")) {
-                        JSONObject sp = obj.getJSONObject("seller_profiles");
-
-                        if (sp.has("store_name") && !sp.isNull("store_name") && !sp.getString("store_name").isEmpty()) {
-                            shopName = sp.getString("store_name");
-                        } else if (sp.has("profile") && !sp.isNull("profile")) {
-                            shopName = sp.getJSONObject("profile").optString("full_name", shopName);
-                        }
-                    }
+                    String shopName = extractShopNameFromSellerProfiles(
+                            obj.opt("seller_profiles"),
+                            "Unknown Shop"
+                    );
 
                     Product product = new Product(
                             R.drawable.product_1,
@@ -698,7 +742,9 @@ public class SupabaseAuthService {
                     items.add(item);
                 }
             }
-        } catch (Exception e) { }
+        } catch (Exception e) {
+            Log.e(TAG, "getMenuItems error for sellerId=" + sellerId, e);
+        }
         return items;
     }
 
@@ -1302,6 +1348,40 @@ public class SupabaseAuthService {
             }
         } catch (Exception e) { Log.e(TAG, "getSellerAvatarUrlBySellerId error", e); }
         return "";
+    }
+
+    private String extractProfileFullName(Object profileField, String fallback) {
+        if (profileField instanceof JSONObject) {
+            return ((JSONObject) profileField).optString("full_name", fallback);
+        }
+
+        if (profileField instanceof JSONArray) {
+            JSONArray profileArr = (JSONArray) profileField;
+            if (profileArr.length() > 0) {
+                JSONObject first = profileArr.optJSONObject(0);
+                if (first != null) return first.optString("full_name", fallback);
+            }
+        }
+
+        return fallback;
+    }
+
+    private String extractShopNameFromSellerProfiles(Object sellerProfilesField, String fallback) {
+        JSONObject sellerProfileObj = null;
+
+        if (sellerProfilesField instanceof JSONObject) {
+            sellerProfileObj = (JSONObject) sellerProfilesField;
+        } else if (sellerProfilesField instanceof JSONArray) {
+            JSONArray arr = (JSONArray) sellerProfilesField;
+            if (arr.length() > 0) sellerProfileObj = arr.optJSONObject(0);
+        }
+
+        if (sellerProfileObj == null) return fallback;
+
+        String storeName = sellerProfileObj.optString("store_name", "");
+        if (!storeName.isEmpty()) return storeName;
+
+        return extractProfileFullName(sellerProfileObj.opt("profile"), fallback);
     }
 
     public AuthResult sendPasswordResetEmail(String email) {

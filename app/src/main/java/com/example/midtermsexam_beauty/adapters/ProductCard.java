@@ -75,7 +75,7 @@ public class ProductCard extends RecyclerView.Adapter<ProductCard.ViewHolder> {
                 Glide.with(itemView.getContext())
                         .load(imageUrl)
                         .centerCrop()
-                        .placeholder(R.drawable.product_1)
+                        .placeholder(R.drawable.tarabytes)
                         .into(productImage);
             } else {
                 productImage.setImageResource(product.getImageID());
@@ -84,11 +84,17 @@ public class ProductCard extends RecyclerView.Adapter<ProductCard.ViewHolder> {
             // ── Text fields ───────────────────────────────────────────────────
             productName.setText(product.getName());
 
-            // Shop name as subtitle so buyer knows which restaurant it's from
-            String shopName = product.getShopName();
-            productDescription.setText(
-                    (shopName != null && !shopName.isEmpty()) ? shopName : ""
-            );
+            String description = product.getDescription();
+            if (description != null && !description.trim().isEmpty()) {
+                productDescription.setText(description.trim());
+            } else {
+                String shopName = product.getShopName();
+                productDescription.setText(
+                        (shopName != null && !shopName.trim().isEmpty())
+                                ? "From " + shopName.trim()
+                                : "No description available"
+                );
+            }
 
             // Price
             productAvailability.setText(

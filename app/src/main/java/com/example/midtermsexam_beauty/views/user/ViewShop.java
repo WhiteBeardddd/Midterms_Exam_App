@@ -23,6 +23,7 @@ import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
 import java.util.List;
+import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,7 +51,7 @@ public class ViewShop extends AppCompatActivity {
 
         ShopPayload payload = readShopPayload();
         bindShopHeader(payload);
-        setupMenuGrid(payload.shopName, payload.sellerId);
+        setupMenuGrid(payload.shopName, payload.sellerId, payload.selectedMenuItemId);
         setupClickListeners(payload);
     }
 
@@ -92,10 +93,11 @@ public class ViewShop extends AppCompatActivity {
     private ShopPayload readShopPayload() {
         Intent intent = getIntent();
         return new ShopPayload(
-                intent.getIntExtra("imageId", R.drawable.product_1),
+                intent.getIntExtra("imageId", R.drawable.tarabytes),
                 sanitize(intent.getStringExtra("name"), DEFAULT_SHOP_NAME),
                 intent.getFloatExtra("rating", DEFAULT_RATING),
                 intent.getStringExtra("sellerId"),
+                intent.getStringExtra("selectedMenuItemId"),
                 intent.getStringExtra("imageUrl"),
                 intent.getStringExtra("backgroundUrl"),
                 intent.getStringExtra("address"),
@@ -110,7 +112,7 @@ public class ViewShop extends AppCompatActivity {
             Glide.with(this)
                     .load(payload.backgroundUrl)
                     .centerCrop()
-                    .placeholder(R.drawable.product_1)
+                    .placeholder(R.drawable.tarabytes)
                     .into(shopCoverImage);
         } else {
             shopCoverImage.setImageResource(payload.coverImageId);
@@ -148,7 +150,7 @@ public class ViewShop extends AppCompatActivity {
         shopSectionNote.setText("Most ordered right now at " + payload.shopName + ".");
     }
 
-    private void setupMenuGrid(String shopName, String sellerId) {
+    private void setupMenuGrid(String shopName, String sellerId, String selectedMenuItemId) {
         RecyclerView rvMenu = findViewById(R.id.rv_shop_menu);
         rvMenu.setLayoutManager(new GridLayoutManager(this, 2));
 
@@ -163,11 +165,25 @@ public class ViewShop extends AppCompatActivity {
 
         executor.execute(() -> {
             List<MenuItem> items = supabase.getMenuItems(session.getToken(), sellerId);
+            prioritizeSelectedItem(items, selectedMenuItemId);
             runOnUiThread(() -> {
                 MenuAdapter adapter = new MenuAdapter(ViewShop.this, items, shopName);
                 rvMenu.setAdapter(adapter);
             });
         });
+    }
+
+    private void prioritizeSelectedItem(List<MenuItem> items, String selectedMenuItemId) {
+        if (items == null || items.isEmpty()) return;
+        if (selectedMenuItemId == null || selectedMenuItemId.trim().isEmpty()) return;
+
+        for (int i = 0; i < items.size(); i++) {
+            MenuItem item = items.get(i);
+            if (selectedMenuItemId.equals(item.getId())) {
+                if (i > 0) Collections.swap(items, 0, i);
+                return;
+            }
+        }
     }
 
     private String sanitize(String value, String fallback) {
@@ -182,6 +198,7 @@ public class ViewShop extends AppCompatActivity {
         private final String  shopName;
         private final float   rating;
         private final String  sellerId;
+        private final String  selectedMenuItemId;
         private final String  avatarUrl;
         private final String  backgroundUrl;
         private final String  address;
@@ -189,12 +206,14 @@ public class ViewShop extends AppCompatActivity {
         private final boolean isOpen;
 
         private ShopPayload(int coverImageId, String shopName, float rating,
-                            String sellerId, String avatarUrl, String backgroundUrl,
+                            String sellerId, String selectedMenuItemId,
+                            String avatarUrl, String backgroundUrl,
                             String address, String description, boolean isOpen) {
             this.coverImageId  = coverImageId;
             this.shopName      = shopName;
             this.rating        = rating;
             this.sellerId      = sellerId;
+            this.selectedMenuItemId = selectedMenuItemId;
             this.avatarUrl     = avatarUrl;
             this.backgroundUrl = backgroundUrl;
             this.address       = address;

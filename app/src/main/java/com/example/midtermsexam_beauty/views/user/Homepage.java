@@ -20,6 +20,7 @@ import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.ProductCard;
 import com.example.midtermsexam_beauty.adapters.RestaurantFeedAdapter;
 import com.example.midtermsexam_beauty.models.Product;
+import com.example.midtermsexam_beauty.models.SellerProfile;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
@@ -71,27 +72,17 @@ public class Homepage extends AppCompatActivity {
 
         NavbarCard.setupNavbar(this);
 
-        ProductCard.OnItemClickListener listener = product -> {
-            Intent intent = new Intent(this, ViewShop.class);
-            intent.putExtra("imageId",       product.getImageID());
-            intent.putExtra("name",          product.getName());
-            intent.putExtra("price",         product.getPrice());
-            intent.putExtra("description",   product.getDescription());
-            intent.putExtra("rating",        product.getRating());
-            intent.putExtra("category",      product.getCategory());
-            intent.putExtra("sellerId",      product.getSellerId());
-            intent.putExtra("imageUrl",      product.getImageUrl());
-            intent.putExtra("backgroundUrl", product.getShopBackground());
-            intent.putExtra("address",       product.getAddress());
-            intent.putExtra("isOpen",        product.getAvalability());
-            startActivity(intent);
-        };
+        ProductCard.OnItemClickListener listener = product -> openShopFromProduct(product);
 
         featuredListView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
         executor.execute(() -> {
-            List<Product> featuredItems = supabase.getRandomMenuItems(session.getToken());
+            List<Product> featured = supabase.getTopPickMenuItems(session.getToken());
+            if (featured == null || featured.isEmpty()) {
+                featured = supabase.getRandomMenuItems(session.getToken());
+            }
+            final List<Product> featuredItems = featured;
             runOnUiThread(() -> {
                 ProductCard adapter = new ProductCard(this, featuredItems, listener);
                 featuredListView.setAdapter(adapter);
@@ -123,7 +114,11 @@ public class Homepage extends AppCompatActivity {
         btnLoadMore.setVisibility(View.GONE);
 
         executor.execute(() -> {
-            List<Product> shops = supabase.getAllShops(session.getToken());
+            List<Product> fetchedShops = supabase.getAllShops(session.getToken());
+            if (fetchedShops == null || fetchedShops.isEmpty()) {
+                fetchedShops = mapSellerProfilesToProducts(supabase.getFeaturedShops(session.getToken()));
+            }
+            final List<Product> shops = fetchedShops;
             runOnUiThread(() -> {
                 paginationProgressBar.setVisibility(View.GONE);
                 allShops.clear();
@@ -139,6 +134,30 @@ public class Homepage extends AppCompatActivity {
                 showPage(currentPage);
             });
         });
+    }
+
+    private List<Product> mapSellerProfilesToProducts(List<SellerProfile> sellers) {
+        List<Product> mapped = new ArrayList<>();
+        if (sellers == null) return mapped;
+
+        for (SellerProfile seller : sellers) {
+            Product shop = new Product(
+                    R.drawable.product_1,
+                    sanitizeShopName(seller.getStoreName(), "Unnamed Shop"),
+                    seller.getDescription() != null ? seller.getDescription() : "",
+                    0.0f,
+                    "Restaurant",
+                    seller.isOpen(),
+                    4.8f,
+                    "All"
+            );
+            shop.setSellerId(seller.getId());
+            shop.setImageUrl(seller.getSellerAvatarUrl());
+            shop.setShopBackground(seller.getSellerProfileBg());
+            shop.setAddress(seller.getAddress());
+            mapped.add(shop);
+        }
+        return mapped;
     }
 
     // ── Append one page of restaurants to the list ────────────────────────────
@@ -177,6 +196,68 @@ public class Homepage extends AppCompatActivity {
             paginationProgressBar.setVisibility(View.GONE);
             isLoading = false;
         }, 600);
+    }
+
+    private void openShopFromProduct(Product product) {
+        Product shopPayload = resolveShopPayload(product);
+
+        Intent intent = new Intent(this, ViewShop.class);
+        intent.putExtra("imageId",       shopPayload.getImageID());
+        intent.putExtra("name",          shopPayload.getName());
+        intent.putExtra("price",         shopPayload.getPrice());
+        intent.putExtra("description",   shopPayload.getDescription());
+        intent.putExtra("rating",        shopPayload.getRating());
+        intent.putExtra("category",      shopPayload.getCategory());
+        String targetSellerId = (product.getSellerId() != null && !product.getSellerId().trim().isEmpty())
+                ? product.getSellerId()
+                : shopPayload.getSellerId();
+        intent.putExtra("sellerId",      targetSellerId);
+        intent.putExtra("selectedMenuItemId", product.getId());
+        intent.putExtra("imageUrl",      shopPayload.getImageUrl());
+        intent.putExtra("backgroundUrl", shopPayload.getShopBackground());
+        intent.putExtra("address",       shopPayload.getAddress());
+        intent.putExtra("isOpen",        shopPayload.getAvalability());
+        startActivity(intent);
+    }
+
+    private Product resolveShopPayload(Product clicked) {
+        Product shopBySeller = findShopBySellerId(clicked.getSellerId());
+        if (shopBySeller != null) {
+            return shopBySeller;
+        }
+
+        Product fallback = new Product(
+                clicked.getImageID(),
+                sanitizeShopName(clicked.getShopName(), clicked.getName()),
+                "",
+                0.0f,
+                "Restaurant",
+                true,
+                clicked.getRating(),
+                "All"
+        );
+        fallback.setSellerId(clicked.getSellerId());
+        fallback.setImageUrl(clicked.getImageUrl());
+        fallback.setShopBackground(clicked.getShopBackground());
+        fallback.setAddress(clicked.getAddress());
+        return fallback;
+    }
+
+    private Product findShopBySellerId(String sellerId) {
+        if (sellerId == null || sellerId.isEmpty()) return null;
+
+        for (Product shop : allShops) {
+            if (sellerId.equals(shop.getSellerId())) {
+                return shop;
+            }
+        }
+        return null;
+    }
+
+    private String sanitizeShopName(String preferred, String fallback) {
+        if (preferred != null && !preferred.trim().isEmpty()) return preferred.trim();
+        if (fallback != null && !fallback.trim().isEmpty()) return fallback.trim();
+        return "Restaurant";
     }
 
     // ── Fullscreen ────────────────────────────────────────────────────────────

@@ -54,7 +54,7 @@ public class RestaurantFeedAdapter extends RecyclerView.Adapter<RestaurantFeedAd
             Glide.with(context)
                     .load(imageUrl)
                     .centerCrop()
-                    .placeholder(R.drawable.product_1)
+                    .placeholder(R.drawable.tarabytes)
                     .into(holder.restaurantImage);
         } else {
             holder.restaurantImage.setImageResource(product.getImageID());
