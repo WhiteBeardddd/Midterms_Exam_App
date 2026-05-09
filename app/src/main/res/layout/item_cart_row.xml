@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
-    android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:background="@drawable/surface_card_soft"
+    android:padding="16dp">
 
+    <!-- 1. Product Image (Slightly larger for a premium feel) -->
     <androidx.cardview.widget.CardView
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        app:cardCornerRadius="12dp">
+        android:id="@+id/image_container"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/cart_item_image"
@@ -20,36 +27,100 @@
             android:src="@drawable/product_1" />
     </androidx.cardview.widget.CardView>
 
-    <LinearLayout
+    <!-- 2. Store Name -->
+    <TextView
+        android:id="@+id/cart_item_store_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_regular"
+        android:maxLines="1"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_delete_item"
+        app:layout_constraintStart_toEndOf="@id/image_container"
+        app:layout_constraintTop_toTopOf="@id/image_container"
+        tools:text="Store Name" />
 
-        <TextView
-            android:id="@+id/cart_item_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/lexend_bold"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+    <!-- 3. Product Name -->
+    <TextView
+        android:id="@+id/cart_item_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="12dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/lexend_bold"
+        android:maxLines="2"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@+id/btn_delete_item"
+        app:layout_constraintStart_toStartOf="@id/cart_item_store_name"
+        app:layout_constraintTop_toBottomOf="@id/cart_item_store_name"
+        tools:text="Item Name" />
+
+    <!-- 4. Price (Stacked neatly under the text) -->
+    <TextView
+        android:id="@+id/cart_item_price"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/lexend_semibold"
+        android:textColor="@color/color_primary"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/image_container"
+        app:layout_constraintStart_toStartOf="@id/cart_item_store_name"
+        tools:text="₱ 0.00" />
+
+    <!-- 5. Delete Button (Isolated top-right to prevent accidental clicks) -->
+    <ImageButton
+        android:id="@+id/btn_delete_item"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:scaleType="fitCenter"
+        android:src="@android:drawable/ic_menu_delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/image_container"
+        app:tint="#FF5252" />
+
+    <!-- 6. Quantity Controls (Anchored bottom-right for easy thumb reach) -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@id/image_container"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/btn_decrease_qty"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_rew"
+            app:tint="@color/text_secondary" />
 
         <TextView
             android:id="@+id/cart_item_qty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/lexend_regular"
-            android:text="1x"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp" />
+            android:layout_marginHorizontal="12dp"
+            android:fontFamily="@font/lexend_bold"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:text="1" />
+
+        <ImageButton
+            android:id="@+id/btn_increase_qty"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_ff"
+            app:tint="@color/text_secondary" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/cart_item_price"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/lexend_semibold"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

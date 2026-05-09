@@ -1,11 +1,11 @@
+// Keep your existing imports...
 package com.example.midtermsexam_beauty.views.user;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Checkout extends AppCompatActivity {
+public class Checkout extends AppCompatActivity implements CheckOutCard.CartActionListener {
     private final List<Product> productList = new ArrayList<>();
     private TextView tvSubtotal, tvTotal;
     private ListView cartListView;
@@ -58,7 +58,8 @@ public class Checkout extends AppCompatActivity {
         tvTotal = findViewById(R.id.tv_total_price);
         btnPlaceOrder = findViewById(R.id.btn_place_order);
 
-        checkOutAdapter = new CheckOutCard(this, productList);
+        // Pass 'this' as the listener interface
+        checkOutAdapter = new CheckOutCard(this, productList, this);
         cartListView.setAdapter(checkOutAdapter);
 
         btnPlaceOrder.setOnClickListener(v -> handleOrderPlacement());
@@ -71,6 +72,32 @@ public class Checkout extends AppCompatActivity {
         updateTotalPrice();
         fetchUserAddress();
     }
+
+    // --- Interface Implementation Methods ---
+
+    @Override
+    public void onQuantityChanged(Product product, int newQuantity) {
+        // Update the central cart repository
+        ProductManager.getInstance().getCartItems().put(product, newQuantity);
+
+        // Refresh the list and prices locally
+        loadCartData();
+        updateTotalPrice();
+    }
+
+    @Override
+    public void onItemDeleted(Product product) {
+        // Remove item from the central cart repository
+        ProductManager.getInstance().getCartItems().remove(product);
+
+        // Refresh the list and prices locally
+        loadCartData();
+        updateTotalPrice();
+
+        Toast.makeText(this, "Item removed from cart", Toast.LENGTH_SHORT).show();
+    }
+
+    // ----------------------------------------
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
@@ -102,6 +129,9 @@ public class Checkout extends AppCompatActivity {
         if (checkOutAdapter != null) {
             checkOutAdapter.notifyDataSetChanged();
         }
+
+        // Disable order button if cart is empty
+        btnPlaceOrder.setEnabled(!productList.isEmpty());
     }
 
     @SuppressLint("DefaultLocale")
