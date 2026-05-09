@@ -89,15 +89,18 @@ public class ViewProductDetails extends AppCompatActivity {
                 sanitize(intent.getStringExtra("name"), DEFAULT_SHOP_NAME),
                 intent.getFloatExtra("rating", DEFAULT_RATING),
                 intent.getStringExtra("sellerId"),
-                intent.getStringExtra("imageUrl") // Reads the URL passed from Homepage
+                intent.getStringExtra("imageUrl"),
+                intent.getStringExtra("backgroundUrl"),
+                intent.getStringExtra("address"),
+                intent.getBooleanExtra("isOpen", false)
         );
     }
 
     private void bindShopHeader(ShopPayload payload) {
         // Loads dynamic image with Glide if it exists
-        if (payload.imageUrl != null && !payload.imageUrl.isEmpty()) {
+        if (payload.backgroundUrl != null && !payload.backgroundUrl.isEmpty()) {
             Glide.with(this)
-                    .load(payload.imageUrl)
+                    .load(payload.backgroundUrl)
                     .centerCrop()
                     .placeholder(R.drawable.product_1)
                     .into(shopCoverImage);
@@ -112,15 +115,32 @@ public class ViewProductDetails extends AppCompatActivity {
     }
 
     private void bindLogo(ShopPayload payload) {
-        if (payload.logoImageId != 0) {
+        if (
+                payload.avatarUrl != null
+                        && !payload.avatarUrl.isEmpty()
+        ) {
+
             shopLogoImage.setVisibility(View.VISIBLE);
+
             shopLogoInitials.setVisibility(View.GONE);
-            shopLogoImage.setImageResource(payload.logoImageId);
+
+            Glide.with(this)
+                    .load(payload.avatarUrl)
+                    .circleCrop()
+                    .placeholder(R.drawable.tarabytes)
+                    .into(shopLogoImage);
+
             return;
         }
+
+        // FALLBACK INITIALS
         shopLogoImage.setVisibility(View.GONE);
+
         shopLogoInitials.setVisibility(View.VISIBLE);
-        shopLogoInitials.setText(buildInitials(payload.shopName));
+
+        shopLogoInitials.setText(
+                buildInitials(payload.shopName)
+        );
     }
 
     private void setupMenuGrid(String shopName, String sellerId) {
@@ -179,15 +199,23 @@ public class ViewProductDetails extends AppCompatActivity {
         private final String shopName;
         private final float rating;
         private final String sellerId;
-        private final String imageUrl;
+        private final String avatarUrl;
+        private final String backgroundUrl;
+        private final String address;
+        private final boolean isOpen;
 
-        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId, String imageUrl) {
+        private ShopPayload(int coverImageId, int logoImageId, String shopName, float rating, String sellerId, String avatarUrl, String backgroundUrl, String address, boolean isOpen) {
             this.coverImageId = coverImageId;
             this.logoImageId = logoImageId;
             this.shopName = shopName;
             this.rating = rating;
             this.sellerId = sellerId;
-            this.imageUrl = imageUrl;
+
+            this.avatarUrl = avatarUrl;
+            this.backgroundUrl = backgroundUrl;
+
+            this.address = address;
+            this.isOpen = isOpen;
         }
     }
 }

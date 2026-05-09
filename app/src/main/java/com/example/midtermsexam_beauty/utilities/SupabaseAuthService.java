@@ -9,6 +9,7 @@ import com.example.midtermsexam_beauty.models.MenuItem;
 import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.models.Profile;
 import com.example.midtermsexam_beauty.R;
+import com.example.midtermsexam_beauty.models.SellerProfile;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -862,5 +863,105 @@ public class SupabaseAuthService {
             }
         } catch (Exception e) { Log.e(TAG, "saveShopBackground error", e); }
         return false;
+    }
+
+    public List<SellerProfile> getFeaturedShops(String token) {
+        List<SellerProfile> shops = new ArrayList<>();
+
+        if (token == null) return shops;
+
+        try {
+            URL url = new URL(
+                    getBaseUrl()
+                    + "/rest/v1/seller_profiles"
+                    + "?select=*"
+            );
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+
+                    SellerProfile seller = new SellerProfile(
+                            obj.optString("id", ""),
+                            obj.optString("profile_id", ""),
+                            obj.optString("store_name", ""),
+                            obj.optString("description", ""),
+                            obj.optString("address", ""),
+                            obj.optBoolean("is_open", true),
+                            obj.optString("seller_avatar_url", ""),
+                            obj.optString("seller_profile_bg", "")
+                    );
+
+                    shops.add(seller);
+                }
+            }
+
+        } catch (Exception e) { Log.e(TAG, "getFeaturedShops", e); }
+
+        return shops;
+    }
+
+    public List<SellerProfile> getNearbyShopss(String token) {
+        List<SellerProfile> shops = new ArrayList<>();
+
+        if (token == null) return shops;
+
+        try {
+            URL url = new URL(
+                    getBaseUrl()
+                            + "/rest/v1/seller_profiles"
+                            + "?select=*"
+            );
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+
+                    SellerProfile seller = new SellerProfile(
+                            obj.optString("id", ""),
+                            obj.optString("profile_id", ""),
+                            obj.optString("store_name", ""),
+                            obj.optString("description", ""),
+                            obj.optString("address", ""),
+                            obj.optBoolean("is_open", true),
+                            obj.optString("seller_avatar_url", ""),
+                            obj.optString("seller_profile_bg", "")
+                    );
+
+                    shops.add(seller);
+                }
+            }
+
+        } catch (Exception e) { Log.e(TAG, "getFeaturedShops", e); }
+
+        return shops;
     }
 }
