@@ -2,6 +2,7 @@ package com.example.midtermsexam_beauty.views.user;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -9,6 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.models.Profile;
@@ -33,7 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_page);
-
+        handleKeyboardOverlap();
         sessionManager = new SessionManager(this);
         if (sessionManager.isLoggedIn()) {
             AppNavigator.openAuthenticatedHome(this, sessionManager.isSeller(), true);
@@ -98,6 +101,15 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
             }
+        });
+    }
+    private void handleKeyboardOverlap() {
+        View rootView = findViewById(android.R.id.content);
+        ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, insets) -> {
+            int imeHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom;
+            int navHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(0, 0, 0, Math.max(imeHeight - navHeight, 0));
+            return insets;
         });
     }
 

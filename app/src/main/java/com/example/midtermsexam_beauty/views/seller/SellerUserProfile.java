@@ -133,8 +133,8 @@ public class SellerUserProfile extends AppCompatActivity {
             return;
         }
 
-        if (fullName.isEmpty()) { etFullName.setError("Name is required"); etFullName.requestFocus(); return; }
-        if (storeName.isEmpty()) { etStoreName.setError("Store name is required"); etStoreName.requestFocus(); return; }
+//        if (fullName.isEmpty()) { etFullName.setError("Name is required"); etFullName.requestFocus(); return; }
+//        if (storeName.isEmpty()) { etStoreName.setError("Store name is required"); etStoreName.requestFocus(); return; }
 
         btnSave.setEnabled(false);
         executor.execute(() -> {

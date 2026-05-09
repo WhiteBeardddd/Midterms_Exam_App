@@ -9,9 +9,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
@@ -124,11 +122,6 @@ public class UserProfile extends AppCompatActivity {
             return;
         }
 
-        if (isSeller && storeName.isEmpty()) {
-            etStoreName.setError("Store Name is required");
-            etStoreName.requestFocus();
-            return;
-        }
 
         btnSave.setEnabled(false);
         executor.execute(() -> {
