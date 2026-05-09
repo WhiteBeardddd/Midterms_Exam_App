@@ -59,7 +59,6 @@ public class PopularAndFeaturedAdapter extends BaseAdapter {
         holder.productName.setText(product.getName());
         holder.productPrice.setText(String.format(Locale.US, "₱%.2f", product.getPrice()));
         holder.productDescription.setText(product.getDescription());
-        holder.productRating.setText(String.format(Locale.US, "%.1f", product.getRating()));
         holder.productCategory.setText(product.getCategory());
 
         String bottomText = product.getShopName() != null ? "Shop: " + product.getShopName() : "Available now";
@@ -70,14 +69,13 @@ public class PopularAndFeaturedAdapter extends BaseAdapter {
 
     private static class ViewHolder {
         ImageView productImage;
-        TextView productName, productPrice, productDescription, productRating, productCategory, productSkinType;
+        TextView productName, productPrice, productDescription, productCategory, productSkinType;
 
         ViewHolder(View view) {
             productImage = view.findViewById(R.id.large_product_image);
             productName = view.findViewById(R.id.product_name);
             productPrice = view.findViewById(R.id.product_price);
             productDescription = view.findViewById(R.id.product_description);
-            productRating = view.findViewById(R.id.product_rating);
             productCategory = view.findViewById(R.id.product_category);
             productSkinType = view.findViewById(R.id.product_skin_type);
         }

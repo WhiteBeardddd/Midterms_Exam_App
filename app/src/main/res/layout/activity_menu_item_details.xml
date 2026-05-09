@@ -129,7 +129,7 @@
             android:id="@+id/btn_add_to_cart"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:background="@drawable/cta_primary"
+            android:background="@drawable/hero_gradient_card"
             android:fontFamily="@font/lexend_bold"
             android:text="Add to Cart - ₱0.00"
             android:textAllCaps="false"

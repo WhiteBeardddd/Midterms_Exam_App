@@ -76,20 +76,6 @@
                     android:textSize="17sp"
                     tools:ignore="HardcodedText" />
 
-                <TextView
-                    android:id="@+id/product_rating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/pill_green"
-                    android:fontFamily="@font/lexend_semibold"
-                    android:paddingStart="10dp"
-                    android:paddingTop="6dp"
-                    android:paddingEnd="10dp"
-                    android:paddingBottom="6dp"
-                    android:text="4.5"
-                    android:textColor="@color/text_primary"
-                    android:textSize="11sp"
-                    tools:ignore="HardcodedText" />
             </LinearLayout>
 
             <TextView

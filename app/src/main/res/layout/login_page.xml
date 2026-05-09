@@ -99,7 +99,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/hero_gradient"
+                android:background="@drawable/hero_gradient_card"
                 app:backgroundTint="@null"
                 android:padding="16dp"
                 android:text="Log In"

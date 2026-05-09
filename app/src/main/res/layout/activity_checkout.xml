@@ -123,7 +123,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="20dp"
-                    android:background="@drawable/cta_primary"
+                    android:background="@drawable/hero_gradient_card"
                     android:fontFamily="@font/lexend_bold"
                     android:text="Place Order"
                     android:textAllCaps="false"
