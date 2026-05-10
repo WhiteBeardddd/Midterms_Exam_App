@@ -23,11 +23,12 @@ import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 import com.example.midtermsexam_beauty.views.seller.SellerDashboard;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.example.midtermsexam_beauty.utilities.BaseAuthenticatedActivity;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class UserProfile extends AppCompatActivity {
+public class UserProfile extends BaseAuthenticatedActivity {
 
     private EditText etFullName, etPhone, etStoreName;
     private LinearLayout layoutStoreName;

@@ -19,13 +19,14 @@ import com.example.midtermsexam_beauty.adapters.SellerOrderAdapter;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService.OrderDetail;
+import com.example.midtermsexam_beauty.utilities.BaseAuthenticatedActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class CurrentOrders extends AppCompatActivity {
+public class CurrentOrders extends BaseAuthenticatedActivity {
 
     private RecyclerView            recyclerView;
     private LinearLayout            emptyStateCard;

@@ -21,6 +21,7 @@ import com.example.midtermsexam_beauty.models.Product;
 import com.example.midtermsexam_beauty.utilities.ProductManager;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
+import com.example.midtermsexam_beauty.utilities.BaseAuthenticatedActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Checkout extends AppCompatActivity implements CheckOutCard.CartActionListener {
+public class Checkout extends BaseAuthenticatedActivity implements CheckOutCard.CartActionListener {
     private final List<Product> productList = new ArrayList<>();
     private TextView tvSubtotal, tvTotal;
     private ListView cartListView;
