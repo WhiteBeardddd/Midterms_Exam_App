@@ -14,7 +14,7 @@ import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.views.user.Checkout;
 import com.example.midtermsexam_beauty.views.user.FeaturedProducts;
 import com.example.midtermsexam_beauty.views.user.Homepage;
-import com.example.midtermsexam_beauty.views.user.PopularProducts;
+import com.example.midtermsexam_beauty.views.user.PopularShops;
 import com.example.midtermsexam_beauty.views.user.UserProfile;
 
 public class NavbarCard {
@@ -48,10 +48,10 @@ public class NavbarCard {
             navFood.setOnClickListener(v -> navigateTo(activity, Homepage.class));
         }
         if (navSearchTab != null) {
-            navSearchTab.setOnClickListener(v -> navigateTo(activity, PopularProducts.class));
+            navSearchTab.setOnClickListener(v -> navigateTo(activity, PopularShops.class));
         }
         if (navSearch != null) {
-            navSearch.setOnClickListener(v -> navigateTo(activity, PopularProducts.class));
+            navSearch.setOnClickListener(v -> navigateTo(activity, PopularShops.class));
         }
         if (navCartTab != null) {
             navCartTab.setOnClickListener(v -> navigateTo(activity, Checkout.class));
@@ -73,7 +73,7 @@ public class NavbarCard {
 
         if (activity instanceof Homepage) {
             setActive(navFood, navFoodLabel);
-        } else if (activity instanceof PopularProducts || activity instanceof FeaturedProducts) {
+        } else if (activity instanceof PopularShops || activity instanceof FeaturedProducts) {
             setActive(navSearch, navSearchLabel);
         } else if (activity instanceof Checkout) {
             setActive(navCart, navCartLabel);

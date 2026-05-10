@@ -23,12 +23,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -622,27 +625,91 @@ public class SupabaseAuthService {
         return items;
     }
 
-    public List<Product> getMenuItemByName(String token, String productName) {
-        List<Product> items = new ArrayList<>();
+    public List<SellerProfile> searchShopsByMenuItem(String token, String query) {
+        List<SellerProfile> shops = new ArrayList<>();
 
-        if (token == null || productName == null) return items;
+        if (token == null || query == null) return shops;
 
         try {
-            String encodedName = URLEncoder.encode(productName, "UTF-8");
+            String encodedQuery = URLEncoder.encode(query, "UTF-8");
 
             URL url = new URL(
                     getBaseUrl()
-                            + "/rest/v1/menu_items"
-                            + "?select=*,seller_profiles(store_name,profile(full_name))"
-                            + "&or=("
-                            + "name.ilike.*" + encodedName + "*,"
-                            + "description.ilike.*" + encodedName + "*,"
-                            + "category.ilike.*" + encodedName + "*"
-                            + ")"
-                            + "&is_available=eq.true"
+                    + "/rest/v1/menu_items"
+                    + "?select=seller_profiles(*)"
+                    + "&name=ilike.*" + encodedQuery + "*"
+                    + "&is_available=eq.true"
             );
 
-            HttpURLConnection conn = (HttpsURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+
+                HashSet<String> addedShopIds = new HashSet<>();
+
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+
+                    if (!obj.has("seller_profiles") || obj.isNull("seller_profiles")) { continue; }
+
+                    JSONObject shopObj = obj.getJSONObject("seller_profiles");
+
+                    product.setSellerId(obj.getString("seller_id"));
+                    product.setId(obj.getString("id"));
+                    product.setImageUrl(obj.optString("image_url", ""));
+                    product.setShopName(shopName);
+
+                    if (addedShopIds.contains(shopId)) { continue; }
+
+                    addedShopIds.add(shopId);
+
+                    SellerProfile shop = new SellerProfile(
+                            shopObj.optString("id"),
+                            shopObj.optString("profile_id"),
+                            shopObj.optString("store_name"),
+                            shopObj.optString("description"),
+                            shopObj.optString("address"),
+                            shopObj.optBoolean("is_open"),
+                            shopObj.optString("seller_avatar_url"),
+                            shopObj.optString("seller_profile_bg")
+                    );
+
+                    shops.add(shop);
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "searchShopsByMenuItem Error", e);
+        }
+
+        return shops;
+    }
+
+    public List<SellerProfile> getRandomShops(String token) {
+        List<SellerProfile> shops = new ArrayList<>();
+
+        if (token == null) return shops;
+
+        try {
+
+            URL url = new URL(
+                    getBaseUrl()
+                            + "/rest/v1/seller_profiles"
+                            + "?select=*"
+                            + "&is_open=eq.true"
+                            + "&order=created_at.desc"
+            );
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             conn.setRequestMethod("GET");
             conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
@@ -655,39 +722,37 @@ public class SupabaseAuthService {
             conn.disconnect();
 
             if (code >= 200 && code < 300) {
+
                 JSONArray arr = new JSONArray(body);
 
+                List<JSONObject> jsonList = new ArrayList<>();
+
                 for (int i = 0; i < arr.length(); i++) {
-                    JSONObject obj = arr.getJSONObject(i);
+                    jsonList.add(arr.getJSONObject(i));
+                }
 
-                    String shopName = extractShopNameFromSellerProfiles(
-                            obj.opt("seller_profiles"),
-                            "Unknown Shop"
-                    );
+                java.util.Collections.shuffle(jsonList);
 
-                    Product product = new Product(
-                            R.drawable.product_1,
-                            obj.getString("name"),
-                            obj.optString("description", ""),
-                            (float) obj.optDouble("price", 0.0),
-                            obj.optString("category", "Food"),
-                            true,
-                            4.8f,
-                            shopName
-                    );
-
-                    product.setSellerId(obj.getString("seller_id"));
-                    product.setId(obj.getString("id"));
-                    product.setImageUrl(obj.optString("image_url", ""));
-                    product.setShopName(shopName);
-
-                    items.add(product);
+                for (JSONObject obj : jsonList) {
+                    SellerProfile shop =
+                            new SellerProfile(
+                                    obj.optString("id"),
+                                    obj.optString("profile_id"),
+                                    obj.optString("store_name"),
+                                    obj.optString("description"),
+                                    obj.optString("address"),
+                                    obj.optBoolean("is_open"),
+                                    obj.optString("seller_avatar_url"),
+                                    obj.optString("seller_profile_bg")
+                            );
+                    shops.add(shop);
                 }
             }
+        } catch (Exception e) {
+            Log.e(TAG, "getRandomShops error", e);
+        }
 
-        } catch (Exception e) { Log.e(TAG, "getMenuItemByName error", e); }
-
-        return items;
+        return shops;
     }
 
     public List<MenuItem> getMenuItems(String token, String sellerId) {
