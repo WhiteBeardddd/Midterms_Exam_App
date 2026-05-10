@@ -663,10 +663,7 @@ public class SupabaseAuthService {
 
                     JSONObject shopObj = obj.getJSONObject("seller_profiles");
 
-                    product.setSellerId(obj.getString("seller_id"));
-                    product.setId(obj.getString("id"));
-                    product.setImageUrl(obj.optString("image_url", ""));
-                    product.setShopName(shopName);
+                    String shopId = shopObj.optString("id");
 
                     if (addedShopIds.contains(shopId)) { continue; }
 
