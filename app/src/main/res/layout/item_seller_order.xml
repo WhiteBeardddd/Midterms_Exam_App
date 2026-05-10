@@ -16,6 +16,7 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- HEADER -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -51,26 +52,28 @@
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PENDING"
+                android:text="DONE"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp" />
         </LinearLayout>
 
+        <!-- DIVIDER -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#333333"
             android:layout_marginVertical="16dp"/>
 
+        <!-- ORDER ITEMS -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Order Items"
+            android:text="ORDER ITEMS"
             android:textColor="#9E9E9E"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold"
             android:textAllCaps="true"
             android:layout_marginBottom="8dp"/>
@@ -81,6 +84,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
 
+        <!-- TOTAL -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -94,7 +98,7 @@
                 android:layout_weight="1"
                 android:text="Total Amount"
                 android:textColor="#FFFFFF"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -107,6 +111,7 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
+        <!-- DELIVERY ADDRESS -->
         <View
             android:id="@+id/dividerAddress"
             android:layout_width="match_parent"
@@ -118,61 +123,172 @@
             android:id="@+id/labelAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delivery Address"
+            android:text="DELIVERY ADDRESS"
             android:textColor="#9E9E9E"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:textStyle="bold"
             android:textAllCaps="true"
             android:layout_marginBottom="6dp"/>
 
+        <!-- Single line address: Street, Barangay, City PostalCode -->
         <TextView
             android:id="@+id/tvAddress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Street, City"
+            android:text="Street, Barangay, City 0000"
             android:textColor="#E0E0E0"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"/>
 
+        <!-- Country on its own line below -->
+        <TextView
+            android:id="@+id/tvCountry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Philippines"
+            android:textColor="#9E9E9E"
+            android:textSize="13sp"
+            android:layout_marginTop="2dp"/>
+
+        <!-- REVIEW SECTION -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#333333"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BUYER REVIEW"
+            android:textColor="#9E9E9E"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- NO REVIEW STATE -->
         <LinearLayout
-            android:id="@+id/reviewContainer"
+            android:id="@+id/noReviewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="20dp"
-            android:padding="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="14dp"
             android:background="@drawable/border_black"
             android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Buyer Review"
-                android:textColor="#00C853"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textAllCaps="true"/>
+                android:text="⏳"
+                android:textSize="18sp"
+                android:layout_marginEnd="10dp"/>
 
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No Review Yet"
+                    android:textColor="#9E9E9E"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pending buyer review"
+                    android:textColor="#616161"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- HAS REVIEW STATE -->
+        <LinearLayout
+            android:id="@+id/reviewContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/border_black"
+            android:visibility="gone">
+
+            <!-- Stars row — full width, wraps naturally -->
             <TextView
                 android:id="@+id/tvRating"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="★★★★★"
+                android:textColor="#FFC107"
+                android:textSize="20sp"
+                android:letterSpacing="0.1"/>
+
+            <!-- Score + date on same row below stars -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/tvRatingScore"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="5.0 / 5"
+                    android:textColor="#FFC107"
+                    android:textSize="14sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tvReviewDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jan 01, 2025  12:00 AM"
+                    android:textColor="#616161"
+                    android:textSize="11sp"/>
+            </LinearLayout>
+
+            <!-- Reviewer name -->
+            <TextView
+                android:id="@+id/tvReviewerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="⭐ 5.0/5"
-                android:textColor="#FFC107"
-                android:textSize="16sp"
-                android:textStyle="bold"
+                android:text="by Unknown Buyer"
+                android:textColor="#757575"
+                android:textSize="12sp"
                 android:layout_marginTop="6dp"/>
 
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#333333"
+                android:layout_marginVertical="10dp"/>
+
+            <!-- Comment -->
             <TextView
                 android:id="@+id/tvReviewComment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Great product! Fast delivery."
-                android:textColor="#FFFFFF"
+                android:text="\u201cGreat product!\u201d"
+                android:textColor="#E0E0E0"
                 android:textSize="14sp"
-                android:layout_marginTop="8dp"
+                android:lineSpacingMultiplier="1.4"
                 android:fontFamily="sans-serif-italic"/>
+
         </LinearLayout>
 
+        <!-- MARK AS DONE (hidden in history) -->
         <Button
             android:id="@+id/btnMarkDone"
             android:layout_width="match_parent"

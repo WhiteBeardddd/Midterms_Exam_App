@@ -58,35 +58,34 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
         LinearLayout itemsContainer;
         View         btnMarkDone;
 
-        // --- NEW: Review Views ---
-        LinearLayout reviewContainer;
-        TextView     tvRating, tvReviewComment;
+        // Review views
+        LinearLayout reviewContainer, noReviewContainer;
+        TextView     tvRating, tvReviewComment, tvReviewDate, tvReviewerName;
 
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvBuyerName     = itemView.findViewById(R.id.tvBuyerName);
-            tvStatus        = itemView.findViewById(R.id.tvStatus);
-            tvDate          = itemView.findViewById(R.id.tvDate);
-            tvTotal         = itemView.findViewById(R.id.tvTotal);
-            tvAddress       = itemView.findViewById(R.id.tvAddress);
-            labelAddress    = itemView.findViewById(R.id.labelAddress);
-            dividerAddress  = itemView.findViewById(R.id.dividerAddress);
-            itemsContainer  = itemView.findViewById(R.id.itemsContainer);
-            btnMarkDone     = itemView.findViewById(R.id.btnMarkDone);
-
-            // Initialize Review Views
-            reviewContainer = itemView.findViewById(R.id.reviewContainer);
-            tvRating        = itemView.findViewById(R.id.tvRating);
-            tvReviewComment = itemView.findViewById(R.id.tvReviewComment);
+            tvBuyerName        = itemView.findViewById(R.id.tvBuyerName);
+            tvStatus           = itemView.findViewById(R.id.tvStatus);
+            tvDate             = itemView.findViewById(R.id.tvDate);
+            tvTotal            = itemView.findViewById(R.id.tvTotal);
+            tvAddress          = itemView.findViewById(R.id.tvAddress);
+            labelAddress       = itemView.findViewById(R.id.labelAddress);
+            dividerAddress     = itemView.findViewById(R.id.dividerAddress);
+            itemsContainer     = itemView.findViewById(R.id.itemsContainer);
+            btnMarkDone        = itemView.findViewById(R.id.btnMarkDone);
+            reviewContainer    = itemView.findViewById(R.id.reviewContainer);
+            noReviewContainer  = itemView.findViewById(R.id.noReviewContainer);
+            tvRating           = itemView.findViewById(R.id.tvRating);
+            tvReviewComment    = itemView.findViewById(R.id.tvReviewComment);
+            tvReviewDate       = itemView.findViewById(R.id.tvReviewDate);
+            tvReviewerName     = itemView.findViewById(R.id.tvReviewerName);
         }
 
         void bind(OrderDetail order) {
-            // Always hide Mark as Done in history
             btnMarkDone.setVisibility(View.GONE);
 
             tvBuyerName.setText(order.buyerFullName);
             tvDate.setText(formatDate(order.createdAt));
-
             tvStatus.setText(order.status.toUpperCase(Locale.ROOT));
             tvStatus.setBackground(statusBackground(order.status));
 
@@ -104,36 +103,39 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
             tvTotal.setText("₱" + String.format(Locale.ROOT, "%.2f", order.totalAmount));
 
             boolean hasAddress = order.street != null && !order.street.isEmpty();
-            int visibility = hasAddress ? View.VISIBLE : View.GONE;
-            dividerAddress.setVisibility(visibility);
-            labelAddress.setVisibility(visibility);
-            tvAddress.setVisibility(visibility);
-
+            dividerAddress.setVisibility(hasAddress ? View.VISIBLE : View.GONE);
+            labelAddress.setVisibility(hasAddress ? View.VISIBLE : View.GONE);
+            tvAddress.setVisibility(hasAddress ? View.VISIBLE : View.GONE);
             if (hasAddress) {
-                String full = order.street + ", " + order.barangay
+                tvAddress.setText(order.street + ", " + order.barangay
                         + "\n" + order.city + " " + order.postalCode
-                        + "\n" + order.country;
-                tvAddress.setText(full);
+                        + "\n" + order.country);
             }
 
-            // ── NEW: Handle Review Display ────────────────────────────────────────
-            // Note: Make sure your OrderDetail class has these fields (rating & reviewComment)
-            if (reviewContainer != null) {
-                boolean hasReview = order.reviewComment != null && !order.reviewComment.isEmpty();
+            // ── Review section ────────────────────────────────────────────────────
+            if (order.hasReview) {
+                noReviewContainer.setVisibility(View.GONE);
+                reviewContainer.setVisibility(View.VISIBLE);
 
-                if (hasReview) {
-                    reviewContainer.setVisibility(View.VISIBLE);
-
-                    // Display stars based on rating (e.g., 4.5 -> "⭐ 4.5/5")
-                    tvRating.setText("⭐ " + order.rating + "/5");
-
-                    // Display the actual comment
-                    tvReviewComment.setText("\"" + order.reviewComment + "\"");
-                } else {
-                    // Hide the entire review section if the buyer hasn't reviewed it yet
-                    reviewContainer.setVisibility(View.GONE);
-                }
+                // Star rating: build visual stars + numeric
+                tvRating.setText(buildStars(order.rating) + "  " + order.rating + " / 5");
+                tvReviewComment.setText("\u201c" + order.reviewComment + "\u201d");
+                tvReviewerName.setText("by " + order.buyerFullName);
+                tvReviewDate.setText(formatDate(order.reviewDate));
+            } else {
+                reviewContainer.setVisibility(View.GONE);
+                noReviewContainer.setVisibility(View.VISIBLE);
             }
+        }
+
+        /** Builds a star string like ★★★★☆ from a 1–5 rating */
+        private String buildStars(double rating) {
+            int full = (int) Math.round(rating);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i <= 5; i++) {
+                sb.append(i <= full ? "★" : "☆");
+            }
+            return sb.toString();
         }
 
         private GradientDrawable statusBackground(String status) {
@@ -141,11 +143,11 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
             gd.setCornerRadius(dp(20));
             int color;
             switch (status.toLowerCase(Locale.ROOT)) {
-                case "done":       color = 0xFF2E7D32; break; // Green
-                case "cancelled":  color = 0xFFC62828; break; // Red
-                case "preparing":  color = 0xFFF57F17; break; // Orange
-                case "on the way": color = 0xFF1565C0; break; // Blue
-                default:           color = 0xFF424242; break; // Grey
+                case "done":       color = 0xFF2E7D32; break;
+                case "cancelled":  color = 0xFFC62828; break;
+                case "preparing":  color = 0xFFF57F17; break;
+                case "on the way": color = 0xFF1565C0; break;
+                default:           color = 0xFF424242; break;
             }
             gd.setColor(color);
             return gd;

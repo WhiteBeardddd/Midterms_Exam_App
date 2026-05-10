@@ -13,7 +13,7 @@
 
         <include layout="@layout/layout_top_brand_header" />
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -44,7 +44,6 @@
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
 
-                <!-- Loading spinner -->
                 <ProgressBar
                     android:id="@+id/progressBar"
                     android:layout_width="wrap_content"
@@ -54,7 +53,6 @@
                     android:indeterminateTint="@color/text_primary"
                     android:visibility="gone" />
 
-                <!-- Empty state -->
                 <LinearLayout
                     android:id="@+id/emptyStateCard"
                     android:layout_width="match_parent"
@@ -86,7 +84,6 @@
 
                 </LinearLayout>
 
-                <!-- Completed orders list -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/transactionsRecyclerView"
                     android:layout_width="match_parent"
@@ -96,11 +93,12 @@
                     android:visibility="gone" />
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
         <include
             android:id="@+id/navigation_bar"
             layout="@layout/layout_seller_navbar" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

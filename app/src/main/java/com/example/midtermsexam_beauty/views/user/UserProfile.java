@@ -33,7 +33,7 @@ public class UserProfile extends BaseAuthenticatedActivity {
     private EditText etFullName, etPhone, etStoreName;
     private LinearLayout layoutStoreName;
     private SwitchMaterial switchIsSeller;
-    private ImageButton settingBtn, orderBtn, favBtn, addressBtn;
+    private ImageButton settingBtn, orderBtn, addressBtn;
     private Button btnSave, btnLogout;
 
     private SessionManager session;
@@ -64,7 +64,6 @@ public class UserProfile extends BaseAuthenticatedActivity {
 
         settingBtn = findViewById(R.id.settings_btn);
         orderBtn = findViewById(R.id.order_btn);
-        favBtn = findViewById(R.id.fav_btn);
         addressBtn = findViewById(R.id.address_btn);
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
@@ -78,8 +77,6 @@ public class UserProfile extends BaseAuthenticatedActivity {
             Intent intent = new Intent(UserProfile.this, MyOrdersActivity.class);
             startActivity(intent);
         });
-
-        favBtn.setOnClickListener(v -> Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show());
         addressBtn.setOnClickListener(v -> startActivity(new Intent(this, AddressActivity.class)));
 
         btnSave.setOnClickListener(v -> saveProfile());

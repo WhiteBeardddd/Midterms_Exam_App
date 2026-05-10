@@ -32,7 +32,7 @@ public class SellerUserProfile extends AppCompatActivity {
     // Add with other EditText declarations at the top
     private EditText etFullName, etPhone, etStoreName, etAddress, etDescription;
     private SwitchMaterial switchIsSeller;
-    private ImageButton settingBtn, favBtn, addressBtn;
+
     private Button btnSave, btnLogout;
     private SessionManager session;
     private SupabaseAuthService authService;
@@ -55,25 +55,10 @@ public class SellerUserProfile extends AppCompatActivity {
         etStoreName = findViewById(R.id.etStoreName);
         etAddress = findViewById(R.id.etAddress);
         switchIsSeller = findViewById(R.id.switchIsSeller);
-        settingBtn = findViewById(R.id.settings_btn);
-        favBtn = findViewById(R.id.fav_btn);
-        addressBtn = findViewById(R.id.address_btn);
         btnSave = findViewById(R.id.btnSaveProfile);
         btnLogout = findViewById(R.id.btnLogout);
 
         loadProfile();
-
-        settingBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Going to settings", Toast.LENGTH_SHORT).show()
-        );
-
-        favBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Fav Product Lists", Toast.LENGTH_SHORT).show()
-        );
-
-        addressBtn.setOnClickListener(v ->
-                Toast.makeText(this, "Set the Location", Toast.LENGTH_SHORT).show()
-        );
 
         btnSave.setOnClickListener(v -> saveProfile());
         btnLogout.setOnClickListener(v -> AppNavigator.logout(this, session));

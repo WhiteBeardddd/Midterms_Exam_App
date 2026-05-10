@@ -1,6 +1,5 @@
 package com.example.midtermsexam_beauty.utilities;
 
-import android.os.Build;
 import android.util.Log;
 
 import com.example.midtermsexam_beauty.BuildConfig;
@@ -63,6 +62,8 @@ public class SupabaseAuthService {
     public static class OrderDetail {
         public String orderId;
         public String status;
+        public String reviewDate = "";
+        public boolean hasReview = false;
         public double totalAmount;
         public String createdAt;
 
@@ -1554,7 +1555,8 @@ public class SupabaseAuthService {
                     + "created_at,"
                     + "profile!orders_buyer_id_fkey(full_name),"
                     + "buyer_address!orders_buyer_address_id_fkey(street,barangay,city,postal_code,country),"
-                    + "order_items(quantity,unit_price,menu_items(name))"
+                    + "order_items(quantity,unit_price,menu_items(name)),"
+                    + "reviews!reviews_order_id_fkey(rating,comment,created_at)"
                     + "&order=created_at.desc";
 
             URL url = new URL(getBaseUrl() + query);
@@ -1610,6 +1612,21 @@ public class SupabaseAuthService {
                             od.items.add(item);
                         }
                     }
+
+                    // ── Parse review ──────────────────────────────────────────────
+                    od.hasReview = false;
+                    if (!o.isNull("reviews")) {
+                        JSONArray reviewsArr = o.getJSONArray("reviews");
+                        if (reviewsArr.length() > 0) {
+                            // Take the most recent review (index 0 since ordered desc)
+                            JSONObject rv = reviewsArr.getJSONObject(0);
+                            od.rating        = rv.optDouble("rating", 0.0);
+                            od.reviewComment = rv.optString("comment", "");
+                            od.reviewDate    = rv.optString("created_at", "");
+                            od.hasReview     = !od.reviewComment.isEmpty() || od.rating > 0;
+                        }
+                    }
+
                     result.add(od);
                 }
             } else {

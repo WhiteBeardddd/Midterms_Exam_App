@@ -104,19 +104,6 @@
                         tools:ignore="ContentDescription" />
 
                     <ImageButton
-                        android:id="@+id/fav_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="70dp"
-                        android:layout_weight="1"
-                        android:layout_marginLeft="4dp"
-                        android:background="@drawable/icon_button_bg"
-                        android:padding="16dp"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/heart_icon"
-                        app:tint="@color/status_danger"
-                        tools:ignore="ContentDescription" />
-
-                    <ImageButton
                         android:id="@+id/address_btn"
                         android:layout_width="0dp"
                         android:layout_height="70dp"

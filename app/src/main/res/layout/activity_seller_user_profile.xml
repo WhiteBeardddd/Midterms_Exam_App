@@ -174,57 +174,7 @@
 
                 </LinearLayout>
 
-                <!-- Quick Action Buttons Card -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:background="@drawable/surface_card"
-                    android:orientation="horizontal"
-                    android:padding="18dp">
 
-                    <ImageButton
-                        android:id="@+id/fav_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="70dp"
-                        android:layout_weight="1"
-                        android:layout_marginLeft="4dp"
-                        android:background="@drawable/icon_button_bg"
-                        android:contentDescription="Favorites"
-                        android:padding="16dp"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/heart_icon"
-                        app:tint="@color/status_danger"
-                        tools:ignore="HardcodedText" />
-
-                    <ImageButton
-                        android:id="@+id/address_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="70dp"
-                        android:layout_weight="1"
-                        android:layout_marginLeft="4dp"
-                        android:background="@drawable/icon_button_bg"
-                        android:contentDescription="Address"
-                        android:padding="16dp"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/location_icon"
-                        app:tint="@color/color_accent_teal"
-                        tools:ignore="HardcodedText" />
-
-                    <ImageButton
-                        android:id="@+id/settings_btn"
-                        android:layout_width="0dp"
-                        android:layout_height="70dp"
-                        android:layout_weight="1"
-                        android:layout_marginLeft="4dp"
-                        android:background="@drawable/icon_button_bg"
-                        android:contentDescription="Settings"
-                        android:padding="16dp"
-                        android:scaleType="centerInside"
-                        app:srcCompat="@drawable/settings_gear"
-                        app:tint="@color/color_gray"
-                        tools:ignore="HardcodedText" />
-                </LinearLayout>
 
                 <!-- Seller Mode Toggle Card -->
                 <LinearLayout
