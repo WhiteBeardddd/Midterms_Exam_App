@@ -58,21 +58,30 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
         LinearLayout itemsContainer;
         View         btnMarkDone;
 
+        // --- NEW: Review Views ---
+        LinearLayout reviewContainer;
+        TextView     tvRating, tvReviewComment;
+
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvBuyerName    = itemView.findViewById(R.id.tvBuyerName);
-            tvStatus       = itemView.findViewById(R.id.tvStatus);
-            tvDate         = itemView.findViewById(R.id.tvDate);
-            tvTotal        = itemView.findViewById(R.id.tvTotal);
-            tvAddress      = itemView.findViewById(R.id.tvAddress);
-            labelAddress   = itemView.findViewById(R.id.labelAddress);
-            dividerAddress = itemView.findViewById(R.id.dividerAddress);
-            itemsContainer = itemView.findViewById(R.id.itemsContainer);
-            btnMarkDone    = itemView.findViewById(R.id.btnMarkDone);
+            tvBuyerName     = itemView.findViewById(R.id.tvBuyerName);
+            tvStatus        = itemView.findViewById(R.id.tvStatus);
+            tvDate          = itemView.findViewById(R.id.tvDate);
+            tvTotal         = itemView.findViewById(R.id.tvTotal);
+            tvAddress       = itemView.findViewById(R.id.tvAddress);
+            labelAddress    = itemView.findViewById(R.id.labelAddress);
+            dividerAddress  = itemView.findViewById(R.id.dividerAddress);
+            itemsContainer  = itemView.findViewById(R.id.itemsContainer);
+            btnMarkDone     = itemView.findViewById(R.id.btnMarkDone);
+
+            // Initialize Review Views
+            reviewContainer = itemView.findViewById(R.id.reviewContainer);
+            tvRating        = itemView.findViewById(R.id.tvRating);
+            tvReviewComment = itemView.findViewById(R.id.tvReviewComment);
         }
 
         void bind(OrderDetail order) {
-            // ── Always hide Mark as Done in history ───────────────────────────
+            // Always hide Mark as Done in history
             btnMarkDone.setVisibility(View.GONE);
 
             tvBuyerName.setText(order.buyerFullName);
@@ -106,6 +115,25 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
                         + "\n" + order.country;
                 tvAddress.setText(full);
             }
+
+            // ── NEW: Handle Review Display ────────────────────────────────────────
+            // Note: Make sure your OrderDetail class has these fields (rating & reviewComment)
+            if (reviewContainer != null) {
+                boolean hasReview = order.reviewComment != null && !order.reviewComment.isEmpty();
+
+                if (hasReview) {
+                    reviewContainer.setVisibility(View.VISIBLE);
+
+                    // Display stars based on rating (e.g., 4.5 -> "⭐ 4.5/5")
+                    tvRating.setText("⭐ " + order.rating + "/5");
+
+                    // Display the actual comment
+                    tvReviewComment.setText("\"" + order.reviewComment + "\"");
+                } else {
+                    // Hide the entire review section if the buyer hasn't reviewed it yet
+                    reviewContainer.setVisibility(View.GONE);
+                }
+            }
         }
 
         private GradientDrawable statusBackground(String status) {
@@ -113,11 +141,11 @@ public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdap
             gd.setCornerRadius(dp(20));
             int color;
             switch (status.toLowerCase(Locale.ROOT)) {
-                case "done":       color = 0xFF2E7D32; break;
-                case "cancelled":  color = 0xFFC62828; break;
-                case "preparing":  color = 0xFFF57F17; break;
-                case "on the way": color = 0xFF1565C0; break;
-                default:           color = 0xFF424242; break;
+                case "done":       color = 0xFF2E7D32; break; // Green
+                case "cancelled":  color = 0xFFC62828; break; // Red
+                case "preparing":  color = 0xFFF57F17; break; // Orange
+                case "on the way": color = 0xFF1565C0; break; // Blue
+                default:           color = 0xFF424242; break; // Grey
             }
             gd.setColor(color);
             return gd;

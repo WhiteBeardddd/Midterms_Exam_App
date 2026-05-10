@@ -32,16 +32,16 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
         void onOrderCompleted(OrderDetail order, int position);
     }
 
-    private final Context                  context;
-    private final List<OrderDetail>        orders;
-    private final LayoutInflater           inflater;
+    private final Context context;
+    private final List<OrderDetail> orders;
+    private final LayoutInflater inflater;
     private final OnOrderCompletedListener completedListener;
 
     public SellerOrderAdapter(Context context, List<OrderDetail> orders,
                               OnOrderCompletedListener completedListener) {
-        this.context           = context;
-        this.orders            = orders;
-        this.inflater          = LayoutInflater.from(context);
+        this.context = context;
+        this.orders = orders;
+        this.inflater = LayoutInflater.from(context);
         this.completedListener = completedListener;
     }
 
@@ -64,24 +64,24 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
 
     class OrderViewHolder extends RecyclerView.ViewHolder {
 
-        TextView     tvBuyerName, tvStatus, tvDate, tvTotal;
-        TextView     tvAddress, labelAddress;
-        View         dividerAddress;
+        TextView tvBuyerName, tvStatus, tvDate, tvTotal;
+        TextView tvAddress, labelAddress;
+        View dividerAddress;
         LinearLayout itemsContainer;
-        Button       btnMarkDone;
+        Button btnMarkDone;
 
         @SuppressLint("WrongViewCast")
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvBuyerName    = itemView.findViewById(R.id.tvBuyerName);
-            tvStatus       = itemView.findViewById(R.id.tvStatus);
-            tvDate         = itemView.findViewById(R.id.tvDate);
-            tvTotal        = itemView.findViewById(R.id.tvTotal);
-            tvAddress      = itemView.findViewById(R.id.tvAddress);
-            labelAddress   = itemView.findViewById(R.id.labelAddress);
+            tvBuyerName = itemView.findViewById(R.id.tvBuyerName);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvDate = itemView.findViewById(R.id.tvDate);
+            tvTotal = itemView.findViewById(R.id.tvTotal);
+            tvAddress = itemView.findViewById(R.id.tvAddress);
+            labelAddress = itemView.findViewById(R.id.labelAddress);
             dividerAddress = itemView.findViewById(R.id.dividerAddress);
             itemsContainer = itemView.findViewById(R.id.itemsContainer);
-            btnMarkDone    = itemView.findViewById(R.id.btnMarkDone);
+            btnMarkDone = itemView.findViewById(R.id.btnMarkDone);
         }
 
         void bind(OrderDetail order, int position) {
@@ -126,6 +126,12 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
                 btnMarkDone.setVisibility(View.GONE);
             } else {
                 btnMarkDone.setVisibility(View.VISIBLE);
+
+                // --- THE FIX: Reset the button state to clear the cache! ---
+                btnMarkDone.setEnabled(true);
+                btnMarkDone.setText("Mark as Done");
+                // -----------------------------------------------------------
+
                 btnMarkDone.setOnClickListener(v -> {
                     if (completedListener != null) {
                         btnMarkDone.setEnabled(false);
@@ -141,11 +147,21 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
             gd.setCornerRadius(dp(20));
             int color;
             switch (status.toLowerCase(Locale.ROOT)) {
-                case "delivered":  color = 0xFF2E7D32; break;
-                case "cancelled":  color = 0xFFC62828; break;
-                case "preparing":  color = 0xFFF57F17; break;
-                case "on the way": color = 0xFF1565C0; break;
-                default:           color = 0xFF424242; break;
+                case "delivered":
+                    color = 0xFF2E7D32;
+                    break;
+                case "cancelled":
+                    color = 0xFFC62828;
+                    break;
+                case "preparing":
+                    color = 0xFFF57F17;
+                    break;
+                case "on the way":
+                    color = 0xFF1565C0;
+                    break;
+                default:
+                    color = 0xFF424242;
+                    break;
             }
             gd.setColor(color);
             return gd;
@@ -161,7 +177,9 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
                         new SimpleDateFormat("MMM dd, yyyy  hh:mm a", Locale.ROOT);
                 fmt.setTimeZone(TimeZone.getDefault());
                 return fmt.format(d);
-            } catch (Exception e) { return iso; }
+            } catch (Exception e) {
+                return iso;
+            }
         }
 
         private int dp(int v) {

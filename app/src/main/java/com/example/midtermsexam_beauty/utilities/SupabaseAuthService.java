@@ -60,8 +60,6 @@ public class SupabaseAuthService {
         public int totalItems = 0;
     }
 
-    // ─── Paste this inside SupabaseAuthService.java ───────────────────────────
-
     public static class OrderDetail {
         public String orderId;
         public String status;
@@ -77,6 +75,8 @@ public class SupabaseAuthService {
         public String city;
         public String postalCode;
         public String country;
+        public double rating = 0.0;
+        public String reviewComment = "";
 
         // Items
         public List<OrderItemDetail> items = new ArrayList<>();
@@ -88,14 +88,6 @@ public class SupabaseAuthService {
         public double unitPrice;
     }
 
-    /**
-     * Fetches all orders for the currently logged-in seller, including:
-     *  - buyer profile (full_name)
-     *  - buyer_address (street, barangay, city, postal_code, country)
-     *  - order_items joined with menu_items (name, quantity, unit_price)
-     *
-     * RLS on the DB ensures only the seller's own orders are returned.
-     */
     public List<OrderDetail> getSellerOrders(String token, String sellerId) {
         List<OrderDetail> result = new ArrayList<>();
         if (token == null || sellerId == null) return result;
@@ -191,8 +183,7 @@ public class SupabaseAuthService {
         return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
     }
 
-    // --- FULLY UPDATED ORDER METHOD ---
-    // --- FULLY UPDATED ORDER METHOD ---
+
     public String placeOrder(String token, String buyerId, String sellerId, String buyerAddressId, double totalAmount, String address) {
         try {
             JSONObject orderPayload = new JSONObject();
@@ -233,7 +224,6 @@ public class SupabaseAuthService {
                 if (arr.length() > 0) {
                     return arr.getJSONObject(0).getString("id"); // Return the Order UUID
                 } else {
-                    // THE TRAP: If Supabase hides the data, print this error!
                     Log.e(TAG, "CRITICAL: Order inserted, but Supabase returned a blank array! Your SELECT policy on the 'orders' table is blocking the buyer from seeing their own order.");
                 }
             } else {
@@ -262,10 +252,9 @@ public class SupabaseAuthService {
             }
 
             if (payload.length() == 0) {
-                // Add this log so you can see if the Cart IDs are broken
                 Log.e(TAG, "SKIPPED: No valid Item IDs found in the cart! Are you using Dummy Data?");
                 return true;
-            } // Nothing valid to insert
+            }
 
             URL url = new URL(getBaseUrl() + "/rest/v1/order_items");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -292,6 +281,7 @@ public class SupabaseAuthService {
         }
         return false;
     }
+
     public List<Order> getBuyerOrders(String token, String buyerId) {
         List<Order> orders = new ArrayList<>();
         try {
@@ -521,7 +511,7 @@ public class SupabaseAuthService {
                     shop.setSellerId(obj.getString("id"));
                     shop.setImageUrl(avatarUrl);
                     shop.setShopName(sellerUsername);
-                    shop.setShopBackground(obj.optString("seller_profile_bg", ""));// seller's real name as subtitle
+                    shop.setShopBackground(obj.optString("seller_profile_bg", ""));
                     shops.add(shop);
                     shop.setDescription(obj.optString("description", ""));
                     shop.setAddress(obj.optString("address", "No address available"));
@@ -568,11 +558,7 @@ public class SupabaseAuthService {
                             shopName
                     );
                     product.setSellerId(obj.getString("seller_id"));
-
-                    // THIS IS THE CRITICAL LINE THAT WAS MISSING!
-                    // This pulls the UUID so the cart knows it's real data.
                     product.setId(obj.getString("id"));
-
                     product.setImageUrl(obj.optString("image_url", ""));
                     product.setShopName(shopName);
                     items.add(product);
@@ -677,7 +663,10 @@ public class SupabaseAuthService {
 
                     JSONObject shopObj = obj.getJSONObject("seller_profiles");
 
-                    String shopId = shopObj.optString("id");
+                    product.setSellerId(obj.getString("seller_id"));
+                    product.setId(obj.getString("id"));
+                    product.setImageUrl(obj.optString("image_url", ""));
+                    product.setShopName(shopName);
 
                     if (addedShopIds.contains(shopId)) { continue; }
 
@@ -992,6 +981,21 @@ public class SupabaseAuthService {
         return new HttpResponse(code, resp);
     }
 
+    // ─── ADDED GET METHOD ──────────────────────────────────────────────
+    private HttpResponse get(String path, String token) throws IOException {
+        URL url = new URL(getBaseUrl() + path);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+        if (token != null) conn.setRequestProperty("Authorization", "Bearer " + token);
+
+        int code = conn.getResponseCode();
+        String resp = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+        conn.disconnect();
+        return new HttpResponse(code, resp);
+    }
+    // ───────────────────────────────────────────────────────────────────
+
     private String readStream(InputStream is) throws IOException {
         if (is == null) return "";
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
@@ -1227,8 +1231,8 @@ public class SupabaseAuthService {
         try {
             URL url = new URL(
                     getBaseUrl()
-                    + "/rest/v1/seller_profiles"
-                    + "?select=*"
+                            + "/rest/v1/seller_profiles"
+                            + "?select=*"
             );
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -1458,7 +1462,6 @@ public class SupabaseAuthService {
                 conn.disconnect();
                 return new AuthResult(true, "Check your email.", null, null);
             } else {
-                // If it fails, read the EXACT error from Supabase!
                 String errorBody = readStream(conn.getErrorStream());
                 conn.disconnect();
                 return new AuthResult(false, extractErrorMessage(errorBody), null, null);
@@ -1528,21 +1531,25 @@ public class SupabaseAuthService {
 
     // ── Only pending orders for CurrentOrders ─────────────────────────────────
     public List<OrderDetail> getPendingSellerOrders(String token, String sellerId) {
-        return fetchSellerOrdersByStatus(token, sellerId, "pending");
+        // Uses strictly "pending"
+        return fetchSellerOrdersByStatus(token, sellerId, "eq.pending");
     }
 
     // ── Only done orders for Transactions ────────────────────────────────────
     public List<OrderDetail> getDoneSellerOrders(String token, String sellerId) {
-        return fetchSellerOrdersByStatus(token, sellerId, "done");
+        // THE FIX: Uses 'in' to grab ALL variations of completed orders!
+        return fetchSellerOrdersByStatus(token, sellerId, "in.(done,DONE,delivered,DELIVERED)");
     }
 
-    private List<OrderDetail> fetchSellerOrdersByStatus(String token, String sellerId, String status) {
+    // ── Updated Helper Method ───────────────────────────────────────────────
+    private List<OrderDetail> fetchSellerOrdersByStatus(String token, String sellerId, String statusCondition) {
         List<OrderDetail> result = new ArrayList<>();
         if (token == null || sellerId == null) return result;
         try {
+            // Notice we swapped out "eq." for the flexible statusCondition variable
             String query = "/rest/v1/orders"
                     + "?seller_id=eq." + sellerId
-                    + "&status=eq." + status
+                    + "&status=" + statusCondition
                     + "&select="
                     + "id,"
                     + "status,"
@@ -1616,4 +1623,38 @@ public class SupabaseAuthService {
         }
         return result;
     }
+
+    public boolean submitReview(String token, String orderId, String reviewerId, int rating, String comment) {
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("order_id", orderId);
+            payload.put("reviewer_id", reviewerId);
+            payload.put("rating", rating);
+
+            if (comment != null && !comment.trim().isEmpty()) {
+                payload.put("comment", comment);
+            }
+
+            HttpResponse res = post("/rest/v1/reviews", payload.toString(), token);
+            return res.statusCode >= 200 && res.statusCode < 300;
+        } catch (Exception e) {
+            Log.e(TAG, "submitReview error", e);
+            return false;
+        }
+    }
+
+    public boolean hasUserReviewedOrder(String token, String orderId) {
+        try {
+            HttpResponse res = get("/rest/v1/reviews?select=id&order_id=eq." + orderId, token);
+
+            if (res.statusCode >= 200 && res.statusCode < 300) {
+                org.json.JSONArray jsonArray = new org.json.JSONArray(res.body);
+                return jsonArray.length() > 0;
+            }
+        } catch (Exception e) {
+            android.util.Log.e("SupabaseAuthService", "Error checking review status", e);
+        }
+        return false;
+    }
+
 }
