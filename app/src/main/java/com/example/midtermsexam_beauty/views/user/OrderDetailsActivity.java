@@ -1,5 +1,6 @@
 package com.example.midtermsexam_beauty.views.user;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -26,14 +27,15 @@ public class OrderDetailsActivity extends BaseAuthenticatedActivity {
 
     private SupabaseAuthService authService;
     private ExecutorService executor;
+
     private String orderId;
-    private Button btnLeaveReview; // Moved to class level so methods can access it
+    private String orderStatus; // Moved to class-level
+    private Button btnLeaveReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_details);
-        hideSystemUI();
 
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
@@ -57,37 +59,51 @@ public class OrderDetailsActivity extends BaseAuthenticatedActivity {
         double total = getIntent().getDoubleExtra("ORDER_TOTAL", 0.0);
 
         // 3. Format and Set Data
-        String cleanStatus = (status != null) ? status.trim() : "pending";
+        orderStatus = (status != null) ? status.trim() : "pending";
         String cleanDate = (date != null && date.length() >= 16)
                 ? date.replace("T", " ").substring(0, 16)
                 : "Recently";
 
         tvOrderId.setText(orderId);
-        tvStatus.setText(cleanStatus.toUpperCase());
+        tvStatus.setText(orderStatus.toUpperCase());
         tvDate.setText(cleanDate);
         tvAddress.setText(address != null ? address : "No address provided");
         tvTotal.setText(String.format(Locale.US, "₱%.2f", total));
 
-        // 4. Implement Review Check Logic
-        // Hide button by default while we check the database
+        // Button is hidden by default. We will check visibility in onResume()
         btnLeaveReview.setVisibility(View.GONE);
+    }
 
-        if ("delivered".equalsIgnoreCase(cleanStatus) || "done".equalsIgnoreCase(cleanStatus)) {
+    // Moved the check to onResume so it runs every single time the page is opened
+    @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+
+        if ("delivered".equalsIgnoreCase(orderStatus) || "done".equalsIgnoreCase(orderStatus)) {
             verifyReviewStatus();
         }
     }
 
-    // --- NEW METHOD: Checks database before showing the button ---
     private void verifyReviewStatus() {
+        // 1. ULTRA-FAST LOCAL CHECK: Did they already review this on this phone?
+        SharedPreferences prefs = getSharedPreferences("ReviewCache", MODE_PRIVATE);
+        if (prefs.getBoolean("reviewed_" + orderId, false)) {
+            btnLeaveReview.setVisibility(View.GONE);
+            return; // Stop here, no need to ask the database!
+        }
+
+        // 2. DATABASE CHECK: Ask Supabase if a review exists
         executor.execute(() -> {
             boolean alreadyReviewed = authService.hasUserReviewedOrder(sessionManager.getToken(), orderId);
 
             runOnUiThread(() -> {
                 if (alreadyReviewed) {
-                    // They already reviewed it, keep the button hidden
+                    // Update local cache so we don't have to ask the DB next time
+                    prefs.edit().putBoolean("reviewed_" + orderId, true).apply();
                     btnLeaveReview.setVisibility(View.GONE);
                 } else {
-                    // No review found! Show the button.
+                    // No review found. Show the button!
                     btnLeaveReview.setVisibility(View.VISIBLE);
                     btnLeaveReview.setOnClickListener(v -> showReviewDialog());
                 }
@@ -127,7 +143,13 @@ public class OrderDetailsActivity extends BaseAuthenticatedActivity {
             runOnUiThread(() -> {
                 if (success) {
                     Toast.makeText(this, "Review submitted! Thank you.", Toast.LENGTH_LONG).show();
-                    // Instantly hide the button so they can't click it again
+
+                    // SAVE TO LOCAL CACHE: Permanently hide the button on this device for this order
+                    getSharedPreferences("ReviewCache", MODE_PRIVATE)
+                            .edit()
+                            .putBoolean("reviewed_" + orderId, true)
+                            .apply();
+
                     btnLeaveReview.setVisibility(View.GONE);
                 } else {
                     Toast.makeText(this, "Failed to submit review. Try again.", Toast.LENGTH_LONG).show();
@@ -141,12 +163,6 @@ public class OrderDetailsActivity extends BaseAuthenticatedActivity {
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         controller.hide(WindowInsetsCompat.Type.systemBars());
         controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        hideSystemUI();
     }
 
     @Override
