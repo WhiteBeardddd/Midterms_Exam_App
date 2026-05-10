@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/color_dark_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        android:background="@color/surface_elevated">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/back_icon"
+            app:tint="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="Order Summary"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:fontFamily="@font/lexend_bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/surface_card"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order ID"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/lexend_regular"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvDetailOrderId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/lexend_bold"
+                android:textSize="16sp"
+                android:layout_marginBottom="16dp"
+                tools:text="#8AB2CD45"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/lexend_regular"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvDetailStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_primary"
+                android:fontFamily="@font/lexend_bold"
+                android:textSize="18sp"
+                android:layout_marginBottom="16dp"
+                tools:text="DELIVERED"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Placed"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/lexend_regular"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvDetailDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/lexend_medium"
+                android:textSize="14sp"
+                android:layout_marginBottom="16dp"
+                tools:text="2026-03-15 14:30"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivery Address"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/lexend_regular"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvDetailAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/lexend_medium"
+                android:textSize="14sp"
+                android:layout_marginBottom="24dp"
+                tools:text="University of San Carlos, Cebu City"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#33FFFFFF"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Amount"
+                android:textColor="@color/text_muted"
+                android:fontFamily="@font/lexend_regular"
+                android:textSize="12sp" />
+            <TextView
+                android:id="@+id/tvDetailTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_accent_orange"
+                android:fontFamily="@font/lexend_bold"
+                android:textSize="24sp"
+                tools:text="₱450.00"/>
+
+            <Button
+                android:id="@+id/btnLeaveReview"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="32dp"
+                android:background="@drawable/hero_gradient_card"
+                android:fontFamily="@font/lexend_bold"
+                android:text="Leave a Review"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

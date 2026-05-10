@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/surface_elevated"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lexend_bold"
+        android:text="Rate your order"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:layout_marginBottom="12dp" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="16dp"
+        android:numStars="5"
+        android:progressTint="@color/status_warning"
+        android:rating="5"
+        android:stepSize="1" />
+
+    <EditText
+        android:id="@+id/etComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/surface_card_soft"
+        android:fontFamily="@font/lexend_regular"
+        android:gravity="top"
+        android:hint="Leave a comment (optional)..."
+        android:minLines="3"
+        android:padding="12dp"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_muted" />
+
+</LinearLayout>

@@ -47,4 +47,5 @@
         android:fontFamily="@font/lexend_semibold"
         android:textColor="@color/color_accent_orange"
         android:textSize="16sp" />
+
 </LinearLayout>

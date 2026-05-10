@@ -43,7 +43,7 @@
         <activity android:name=".views.user.SettingsActivity" android:exported="false" />
         <activity android:name=".views.user.MenuItemDetailsActivity" />
         <activity android:name=".views.user.MyOrdersActivity" android:exported="false" />
-
+        <activity android:name=".views.user.OrderDetailsActivity" />
         <activity android:name=".views.user.ForgotPasswordActivity" android:exported="false" />
         <activity android:name=".views.user.ResetPasswordActivity" android:exported="true">
             <intent-filter>

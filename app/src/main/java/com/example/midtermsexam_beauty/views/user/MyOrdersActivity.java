@@ -1,11 +1,10 @@
 package com.example.midtermsexam_beauty.views.user;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -15,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.OrderAdapter;
 import com.example.midtermsexam_beauty.models.Order;
-import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.BaseAuthenticatedActivity;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
 import java.util.ArrayList;
@@ -23,13 +22,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MyOrdersActivity extends AppCompatActivity {
+public class MyOrdersActivity extends BaseAuthenticatedActivity {
 
     private RecyclerView rvMyOrders;
     private OrderAdapter orderAdapter;
-    private List<Order> orderList = new ArrayList<>();
+    private final List<Order> orderList = new ArrayList<>();
 
-    private SessionManager sessionManager;
     private SupabaseAuthService authService;
     private ExecutorService executor;
 
@@ -38,7 +36,7 @@ public class MyOrdersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_orders);
         hideSystemUI();
-        sessionManager = new SessionManager(this);
+
         authService = new SupabaseAuthService();
         executor = Executors.newSingleThreadExecutor();
 
@@ -51,14 +49,45 @@ public class MyOrdersActivity extends AppCompatActivity {
         orderAdapter = new OrderAdapter(orderList, this::showOrderDetailsDialog);
         rvMyOrders.setAdapter(orderAdapter);
 
-        // Fetch orders at the very end of onCreate!
         fetchMyOrders();
+    }
+
+    private void fetchMyOrders() {
+        String profileId = sessionManager.getProfileId();
+        if (profileId == null) return;
+
+        executor.execute(() -> {
+            List<Order> fetchedOrders = authService.getBuyerOrders(sessionManager.getToken(), profileId);
+
+            runOnUiThread(() -> {
+                if (fetchedOrders != null && !fetchedOrders.isEmpty()) {
+                    orderList.clear();
+                    orderList.addAll(fetchedOrders);
+                    orderAdapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(this, "No orders found.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    private void showOrderDetailsDialog(Order order) {
+        Intent intent = new Intent(this, OrderDetailsActivity.class);
+        intent.putExtra("ORDER_ID", order.getId());
+        intent.putExtra("ORDER_DATE", order.getCreatedAt());
+        intent.putExtra("ORDER_STATUS", order.getStatus());
+        intent.putExtra("ORDER_ADDRESS", order.getAddress());
+        intent.putExtra("ORDER_TOTAL", order.getTotalAmount());
+        startActivity(intent);
     }
 
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+
+        // FIXED LINE: Added "Decor" to the method name
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         controller.hide(WindowInsetsCompat.Type.systemBars());
         controller.setSystemBarsBehavior(
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
@@ -68,50 +97,7 @@ public class MyOrdersActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         hideSystemUI();
-    }
-
-    private void fetchMyOrders() {
-        if (sessionManager.getToken() == null || sessionManager.getProfileId() == null) {
-            Toast.makeText(this, "ERROR: Missing User Session Data!", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        executor.execute(() -> {
-            List<Order> fetchedOrders = authService.getBuyerOrders(sessionManager.getToken(), sessionManager.getProfileId());
-
-            runOnUiThread(() -> {
-                // Tracker to tell you exactly how many orders were downloaded
-                Toast.makeText(MyOrdersActivity.this, "Found " + fetchedOrders.size() + " orders", Toast.LENGTH_SHORT).show();
-
-                orderList.clear();
-                orderList.addAll(fetchedOrders);
-
-                // Safety check so it doesn't crash the layout manager
-                if (orderAdapter != null) {
-                    orderAdapter.notifyDataSetChanged();
-                }
-            });
-        });
-    }
-
-    private void showOrderDetailsDialog(Order order) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Order Details");
-
-        String dateString = "Recently";
-        if (order.getCreatedAt() != null && order.getCreatedAt().length() >= 16) {
-            dateString = order.getCreatedAt().replace("T", " ").substring(0, 16);
-        }
-
-        String message = "Order ID:\n" + order.getId() + "\n\n"
-                + "Date Placed:\n" + dateString + "\n\n"
-                + "Status:\n" + (order.getStatus() != null ? order.getStatus().toUpperCase() : "PENDING") + "\n\n"
-                + "Delivery Address:\n" + order.getAddress() + "\n\n"
-                + "Total Amount:\n₱" + String.format(java.util.Locale.US, "%.2f", order.getTotalAmount());
-
-        builder.setMessage(message);
-        builder.setPositiveButton("Close", null);
-        builder.show();
+        fetchMyOrders();
     }
 
     @Override

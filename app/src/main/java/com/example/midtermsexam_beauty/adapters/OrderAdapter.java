@@ -17,12 +17,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
     private List<Order> orders;
     private OnOrderClickListener listener;
 
-    // 1. Create an interface for the click listener
     public interface OnOrderClickListener {
         void onOrderClick(Order order);
     }
 
-    // 2. Updated constructor that accepts BOTH the list and the listener
     public OrderAdapter(List<Order> orders, OnOrderClickListener listener) {
         this.orders = orders;
         this.listener = listener;
@@ -44,7 +42,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
                 : "N/A";
 
         holder.tvOrderId.setText("Order #" + shortId);
-        holder.tvOrderStatus.setText(order.getStatus() != null ? order.getStatus().toUpperCase() : "PENDING");
+
+        String status = order.getStatus() != null ? order.getStatus().trim() : "pending";
+        holder.tvOrderStatus.setText(status.toUpperCase());
         holder.tvOrderTotal.setText(String.format(Locale.US, "₱%.2f", order.getTotalAmount()));
 
         if (order.getCreatedAt() != null && order.getCreatedAt().length() >= 10) {
@@ -53,7 +53,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.ViewHolder> 
             holder.tvOrderDate.setText("Placed recently");
         }
 
-        // 3. Trigger the listener when the row is clicked!
+        // Card Click opens the OrderDetailsActivity where the review button lives
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onOrderClick(order);
