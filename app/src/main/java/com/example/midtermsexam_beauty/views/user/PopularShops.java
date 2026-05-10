@@ -4,7 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.widget.EditText;
-import android.widget.ListView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextWatcher;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,8 +15,8 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.midtermsexam_beauty.R;
 import com.example.midtermsexam_beauty.adapters.NavbarCard;
-import com.example.midtermsexam_beauty.adapters.PopularAndFeaturedAdapter;
-import com.example.midtermsexam_beauty.models.Product;
+import com.example.midtermsexam_beauty.adapters.SellerCard;
+import com.example.midtermsexam_beauty.models.SellerProfile;
 import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 
@@ -24,10 +25,10 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class PopularProducts extends AppCompatActivity {
+public class PopularShops extends AppCompatActivity {
 
-    private final ArrayList<Product> popularProducts = new ArrayList<>();
-    private PopularAndFeaturedAdapter popularAdapter;
+    private final ArrayList<SellerProfile> popularShops = new ArrayList<>();
+    private SellerCard searchAdapter;
 
 
     @Override
@@ -37,18 +38,14 @@ public class PopularProducts extends AppCompatActivity {
         hideSystemUI();
         NavbarCard.setupNavbar(this);
 
-        ListView popularListView = findViewById(R.id.popular_recycler);
+        RecyclerView popularListView = findViewById(R.id.popular_recycler);
+        popularListView.setLayoutManager(new LinearLayoutManager(this));
         EditText searchBar = findViewById(R.id.searchEditText);
 
-        popularAdapter = new PopularAndFeaturedAdapter(this, popularProducts);
-        popularListView.setAdapter(popularAdapter);
+        searchAdapter = new SellerCard(this, popularShops, this::openShopDetails);
+        popularListView.setAdapter(searchAdapter);
 
-        popularListView.setOnItemClickListener((parent, view, position, id) -> {
-            Product product = popularProducts.get(position);
-            openProductDetails(product);
-        });
-
-        fetchDynamicMenuItems();
+        fetchRandomShops();
 
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
@@ -62,9 +59,9 @@ public class PopularProducts extends AppCompatActivity {
                 String query = s.toString().trim();
 
                 if (query.isEmpty()) {
-                    fetchDynamicMenuItems();
+                    fetchRandomShops();
                 } else {
-                    searchProducts(query);
+                    searchShops(query);
                 }
             }
 
@@ -75,22 +72,22 @@ public class PopularProducts extends AppCompatActivity {
         });
     }
 
-    private void fetchDynamicMenuItems() {
+    private void fetchRandomShops() {
         SessionManager session = new SessionManager(this);
         SupabaseAuthService supabase = new SupabaseAuthService();
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
         executor.execute(() -> {
-            List<Product> dynamicItems = supabase.getRandomMenuItems(session.getToken());
+            List<SellerProfile> dynamicItems = supabase.getRandomShops(session.getToken());
             runOnUiThread(() -> {
-                popularProducts.clear();
-                popularProducts.addAll(dynamicItems);
-                popularAdapter.notifyDataSetChanged();
+                popularShops.clear();
+                popularShops.addAll(dynamicItems);
+                searchAdapter.notifyDataSetChanged();
             });
         });
     }
 
-    private void searchProducts(String query) {
+    private void searchShops(String query) {
 
         SessionManager session = new SessionManager(this);
         SupabaseAuthService supabase = new SupabaseAuthService();
@@ -98,16 +95,16 @@ public class PopularProducts extends AppCompatActivity {
 
         executor.execute(() -> {
 
-            List<Product> results =
-                    supabase.getMenuItemByName(
+            List<SellerProfile> results =
+                    supabase.searchShopsByMenuItem(
                             session.getToken(),
                             query
                     );
 
             runOnUiThread(() -> {
-                popularProducts.clear();
-                popularProducts.addAll(results);
-                popularAdapter.notifyDataSetChanged();
+                popularShops.clear();
+                popularShops.addAll(results);
+                searchAdapter.notifyDataSetChanged();
             });
         });
     }
@@ -127,15 +124,18 @@ public class PopularProducts extends AppCompatActivity {
         super.onResume();
         hideSystemUI();
     }
-    private void openProductDetails(Product product) {
-        Intent intent = new Intent(this, MenuItemDetailsActivity.class);
-        intent.putExtra("item_name", product.getName());
-        intent.putExtra("item_desc", product.getDescription());
-        intent.putExtra("item_price", (double) product.getPrice());
-        intent.putExtra("shop_name", product.getShopName());
-        intent.putExtra("image_url", product.getImageUrl());
-        intent.putExtra("seller_id", product.getSellerId()); // Pass seller ID
-        intent.putExtra("item_id", product.getId());
+    private void openShopDetails(SellerProfile shop) {
+
+        Intent intent = new Intent(this, ViewShop.class);
+
+        intent.putExtra("name", shop.getStoreName());
+        intent.putExtra("sellerId", shop.getId());
+        intent.putExtra("imageUrl", shop.getSellerAvatarUrl());
+        intent.putExtra("backgroundUrl", shop.getSellerProfileBg());
+        intent.putExtra("address", shop.getAddress());
+        intent.putExtra("description", shop.getDescription());
+        intent.putExtra("isOpen", shop.isOpen());
+
         startActivity(intent);
     }
 }

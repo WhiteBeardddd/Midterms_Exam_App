@@ -103,7 +103,7 @@ public class Homepage extends BaseAuthenticatedActivity {
         // ── Search ────────────────────────────────────────────────────────────
         searchEditText.setOnFocusChangeListener((v, hasFocus) -> {
             if (hasFocus) {
-                startActivity(new Intent(this, PopularProducts.class));
+                startActivity(new Intent(this, PopularShops.class));
                 v.clearFocus();
             }
         });

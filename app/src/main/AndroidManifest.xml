@@ -25,10 +25,9 @@
         </activity>
 
         <activity android:name=".views.user.Homepage" android:exported="false" />
-        <activity android:name=".views.user.PopularProducts" android:exported="false" />
+        <activity android:name=".views.user.PopularShops" android:exported="false" />
         <activity android:name=".views.user.FeaturedProducts" android:exported="false" />
         <activity android:name=".views.user.ViewShop" android:exported="false" />
-        <activity android:name=".views.user.SkinType" android:exported="false" />
         <activity android:name=".views.user.Checkout" android:exported="false" />
         <activity android:name=".views.user.UserProfile" android:exported="false" />
         <activity
