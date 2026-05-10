@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/lexend_medium"
-                android:text="4.9 ★"
+                android:text=""
                 android:textColor="@color/status_warning"
                 android:textSize="12sp" />
         </LinearLayout>

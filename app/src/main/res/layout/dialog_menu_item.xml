@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/color_dark_bg">
 
     <LinearLayout
@@ -21,14 +22,17 @@
         <Button
             android:id="@+id/btnPickImage"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/surface_card_soft"
-            android:fontFamily="@font/lexend_medium"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/hero_gradient_card"
+            app:backgroundTint="@null"
+            android:padding="10dp"
             android:text="Pick Image"
             android:textAllCaps="false"
-            android:textColor="@color/text_primary"
-            android:textSize="13sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:stateListAnimator="@null" />
 
         <!-- Item Name -->
         <TextView

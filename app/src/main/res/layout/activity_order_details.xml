@@ -139,15 +139,17 @@
             <Button
                 android:id="@+id/btnLeaveReview"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="32dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
                 android:background="@drawable/hero_gradient_card"
-                android:fontFamily="@font/lexend_bold"
-                android:text="Leave a Review"
+                app:backgroundTint="@null"
+                android:padding="10dp"
+                android:text="Review"
                 android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:stateListAnimator="@null" />
 
         </LinearLayout>
     </ScrollView>

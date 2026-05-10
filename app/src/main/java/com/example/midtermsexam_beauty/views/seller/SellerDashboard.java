@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 
 public class SellerDashboard extends AppCompatActivity {
 
-
     private static final String TAG = "SellerDashboard";
 
     private SessionManager sessionManager;
@@ -64,9 +63,10 @@ public class SellerDashboard extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seller_dashboard);
         hideSystemUI();
+
         sessionManager = new SessionManager(this);
-        authService = new SupabaseAuthService();
-        executor = Executors.newSingleThreadExecutor();
+        authService    = new SupabaseAuthService();
+        executor       = Executors.newSingleThreadExecutor();
 
         token     = sessionManager.getToken();
         authId    = sessionManager.getUserId();
@@ -76,6 +76,10 @@ public class SellerDashboard extends AppCompatActivity {
         ivSellerAvatar   = findViewById(R.id.ivSellerAvatar);
         tvStoreName      = findViewById(R.id.tvStoreName);
         tvSellerName     = findViewById(R.id.tvSellerName);
+        tvTotalSales     = findViewById(R.id.tvTotalSales);
+        tvCompletedOrders = findViewById(R.id.tvCompletedOrders);
+        tvPendingOrders  = findViewById(R.id.tvPendingOrders);
+        tvTotalItems     = findViewById(R.id.tvTotalItems);
 
         findViewById(R.id.btnEditAvatar).setOnClickListener(v -> {
             isUpdatingAvatar = true;
@@ -87,33 +91,13 @@ public class SellerDashboard extends AppCompatActivity {
             openImagePicker();
         });
 
-        SellerNavCard.setupNavbar(this);
-
-        tvTotalSales      = findViewById(R.id.tvTotalSales);
-        tvCompletedOrders = findViewById(R.id.tvCompletedOrders);
-        tvPendingOrders   = findViewById(R.id.tvPendingOrders);
-        tvTotalItems      = findViewById(R.id.tvTotalItems);
-
         Button btnSellerLogout = findViewById(R.id.btnSellerLogout);
         btnSellerLogout.setOnClickListener(v -> AppNavigator.logout(this, sessionManager));
 
+        SellerNavCard.setupNavbar(this);
         loadStatistics();
     }
 
-    private void hideSystemUI() {
-        WindowInsetsControllerCompat controller =
-                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        controller.hide(WindowInsetsCompat.Type.systemBars());
-        controller.setSystemBarsBehavior(
-                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        hideSystemUI();
-    }
     private void loadStatistics() {
         if (token == null || authId == null) return;
 
@@ -133,9 +117,11 @@ public class SellerDashboard extends AppCompatActivity {
                     tvPendingOrders.setText(String.valueOf(stats.pendingOrders));
                     tvTotalItems.setText(String.valueOf(stats.totalItems));
 
-                    tvStoreName.setText(storeName != null && !storeName.isEmpty() ? storeName : "My Store");
+                    tvStoreName.setText(storeName != null && !storeName.isEmpty()
+                            ? storeName : "My Store");
                     tvSellerName.setText(profile != null ? profile.getFullName() : "Seller");
 
+                    // Background — normal rectangular load
                     if (bgUrl != null && !bgUrl.isEmpty()) {
                         Glide.with(this)
                                 .load(bgUrl)
@@ -144,13 +130,14 @@ public class SellerDashboard extends AppCompatActivity {
                                 .into(ivShopBackground);
                     }
 
-                    if (avatarUrl != null && !avatarUrl.isEmpty()) {
-                        Glide.with(this)
-                                .load(avatarUrl)
-                                .skipMemoryCache(true)
-                                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                .into(ivSellerAvatar);
-                    }
+                    // Avatar — circular crop via Glide
+                    Glide.with(this)
+                            .load(avatarUrl != null && !avatarUrl.isEmpty()
+                                    ? avatarUrl : R.drawable.circle_avatar_bg)
+                            .circleCrop()
+                            .skipMemoryCache(true)
+                            .diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .into(ivSellerAvatar);
                 });
             }
         });
@@ -162,7 +149,6 @@ public class SellerDashboard extends AppCompatActivity {
         imagePickerLauncher.launch(intent);
     }
 
-    // Same pattern as SellerMenu's extractPathFromUrl()
     private String extractPathFromUrl(String imageUrl, boolean isAvatar) {
         try {
             String marker = isAvatar
@@ -177,12 +163,8 @@ public class SellerDashboard extends AppCompatActivity {
     private void uploadSelectedImage(Uri imageUri, boolean isAvatar) {
         executor.execute(() -> {
             try {
-                // Read bytes — same as SellerMenu's uploadImage()
                 InputStream is = getContentResolver().openInputStream(imageUri);
-                if (is == null) {
-                    Log.e(TAG, "InputStream is null");
-                    return;
-                }
+                if (is == null) { Log.e(TAG, "InputStream is null"); return; }
                 byte[] bytes = readStreamBytes(is);
                 is.close();
 
@@ -192,50 +174,58 @@ public class SellerDashboard extends AppCompatActivity {
                 String ext  = mimeType.contains("png") ? "png" : "jpg";
                 String path = authId + "/" + UUID.randomUUID() + "." + ext;
 
-                // Delete old — same pattern as SellerMenu's saveMenuItem()
+                // Delete old image
                 String oldUrl = isAvatar
                         ? authService.getSellerAvatarUrl(token, profileId)
                         : authService.getShopBackground(token, profileId);
-                Log.d(TAG, "Old URL: " + oldUrl);
-
                 if (oldUrl != null && !oldUrl.isEmpty()) {
                     String oldPath = extractPathFromUrl(oldUrl, isAvatar);
-                    Log.d(TAG, "Deleting old path: " + oldPath);
                     if (oldPath != null) authService.deleteImage(token, bucket, oldPath);
                 }
 
-                // Upload new
+                // Upload new image
                 String uploadedUrl = authService.uploadImage(token, bucket, path, bytes, mimeType);
-                Log.d(TAG, "Uploaded new URL: " + uploadedUrl);
-
                 if (uploadedUrl == null) {
-                    handler.post(() -> Toast.makeText(this, "Failed to upload image.", Toast.LENGTH_SHORT).show());
+                    handler.post(() -> Toast.makeText(this,
+                            "Failed to upload image.", Toast.LENGTH_SHORT).show());
                     return;
                 }
 
-                // Save to DB
+                // Save URL to DB
                 boolean saved = isAvatar
                         ? authService.saveSellerAvatarUrl(token, profileId, uploadedUrl)
                         : authService.saveShopBackground(token, profileId, uploadedUrl);
 
                 if (saved) {
                     handler.post(() -> {
-                        Glide.with(this)
-                                .load(uploadedUrl)
-                                .skipMemoryCache(true)
-                                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                                .into(isAvatar ? ivSellerAvatar : ivShopBackground);
+                        if (isAvatar) {
+                            // Reload avatar with circleCrop
+                            Glide.with(this)
+                                    .load(uploadedUrl)
+                                    .circleCrop()
+                                    .skipMemoryCache(true)
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .into(ivSellerAvatar);
+                        } else {
+                            Glide.with(this)
+                                    .load(uploadedUrl)
+                                    .skipMemoryCache(true)
+                                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                                    .into(ivShopBackground);
+                        }
                         Toast.makeText(this,
                                 isAvatar ? "Avatar updated!" : "Background updated!",
                                 Toast.LENGTH_SHORT).show();
                     });
                 } else {
-                    handler.post(() -> Toast.makeText(this, "Failed to save to database.", Toast.LENGTH_SHORT).show());
+                    handler.post(() -> Toast.makeText(this,
+                            "Failed to save to database.", Toast.LENGTH_SHORT).show());
                 }
 
             } catch (Exception e) {
                 Log.e(TAG, "Upload failed", e);
-                handler.post(() -> Toast.makeText(this, "An error occurred during upload.", Toast.LENGTH_SHORT).show());
+                handler.post(() -> Toast.makeText(this,
+                        "An error occurred during upload.", Toast.LENGTH_SHORT).show());
             }
         });
     }
@@ -251,8 +241,23 @@ public class SellerDashboard extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        hideSystemUI();
+    }
+
+    @Override
     protected void onDestroy() {
         if (executor != null) executor.shutdown();
         super.onDestroy();
+    }
+
+    private void hideSystemUI() {
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        controller.hide(WindowInsetsCompat.Type.systemBars());
+        controller.setSystemBarsBehavior(
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
     }
 }

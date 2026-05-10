@@ -21,7 +21,6 @@
             android:layout_weight="1"
             android:fillViewport="true">
 
-            <!-- Single child wrapper -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -29,8 +28,7 @@
                 android:clipChildren="false"
                 android:clipToPadding="false">
 
-                <!-- Shop Background Banner -->
-                <!-- Replace the entire banner + store name section with this -->
+                <!-- Banner + Avatar overlay -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -43,7 +41,7 @@
                         android:scaleType="centerCrop"
                         android:src="@color/black" />
 
-                    <!-- Edit background button -->
+                    <!-- Edit background button — pencil icon, top right -->
                     <ImageButton
                         android:id="@+id/btnEditBackground"
                         android:layout_width="36dp"
@@ -51,12 +49,12 @@
                         android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true"
                         android:layout_margin="12dp"
-                        android:background="@drawable/surface_card"
-                        android:src="@drawable/back_icon"
+                        android:background="@drawable/hero_gradient_card"
+                        android:src="@drawable/add_link"
                         android:padding="8dp"
                         android:contentDescription="Edit background" />
 
-                    <!-- Avatar — positioned to overlap the banner bottom naturally -->
+                    <!-- Circular avatar overlapping banner -->
                     <ImageView
                         android:id="@+id/ivSellerAvatar"
                         android:layout_width="88dp"
@@ -64,25 +62,25 @@
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="136dp"
                         android:scaleType="centerCrop"
-                        android:background="@drawable/surface_card"
+                        android:background="@drawable/circle_avatar_bg"
+                        android:clipToOutline="true"
                         android:contentDescription="Seller avatar" />
 
-                    <!-- Camera button on avatar -->
+                    <!-- Pencil button on avatar -->
                     <ImageButton
                         android:id="@+id/btnEditAvatar"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:layout_marginStart="80dp"
                         android:layout_marginTop="196dp"
-                        android:background="@drawable/cta_primary"
-                        android:src="@drawable/check_out_icon"
+                        android:background="@drawable/hero_gradient_card"
+                        android:src="@drawable/add_link"
                         android:padding="6dp"
                         android:contentDescription="Edit avatar" />
 
-
                 </RelativeLayout>
 
-                <!-- Store name row — 52dp top margin clears the avatar overlap -->
+                <!-- Store name + seller name -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -271,15 +269,17 @@
                     <Button
                         android:id="@+id/btnSellerLogout"
                         android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:layout_marginTop="32dp"
-                        android:background="@drawable/cta_secondary"
-                        android:elevation="0dp"
-                        android:fontFamily="@font/lexend_semibold"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:background="@drawable/hero_gradient_card"
+                        app:backgroundTint="@null"
+                        android:padding="16dp"
                         android:text="Log Out"
                         android:textAllCaps="false"
-                        android:textColor="@color/text_primary"
-                        tools:ignore="ButtonStyle,HardcodedText" />
+                        android:textColor="#FFFFFF"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:stateListAnimator="@null" />
 
                 </LinearLayout>
             </LinearLayout>

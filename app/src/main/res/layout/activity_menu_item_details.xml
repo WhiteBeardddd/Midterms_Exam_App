@@ -128,13 +128,17 @@
         <Button
             android:id="@+id/btn_add_to_cart"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:background="@drawable/hero_gradient_card"
-            android:fontFamily="@font/lexend_bold"
+            app:backgroundTint="@null"
+            android:padding="10dp"
             android:text="Add to Cart - ₱0.00"
             android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:stateListAnimator="@null" />
     </LinearLayout>
 
 </RelativeLayout>

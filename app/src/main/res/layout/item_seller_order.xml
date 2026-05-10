@@ -289,17 +289,23 @@
         </LinearLayout>
 
         <!-- MARK AS DONE (hidden in history) -->
+
         <Button
             android:id="@+id/btnMarkDone"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/hero_gradient_card"
+            app:backgroundTint="@null"
+            android:padding="10dp"
             android:text="Mark as Done"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:backgroundTint="#FF5722" />
+            android:stateListAnimator="@null" />
+
+
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

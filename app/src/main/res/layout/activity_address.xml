@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/color_dark_bg">
 
     <LinearLayout
@@ -200,14 +201,17 @@
                 <Button
                     android:id="@+id/btnSaveAddress"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/cta_primary"
-                    android:fontFamily="@font/lexend_bold"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/hero_gradient_card"
+                    app:backgroundTint="@null"
+                    android:padding="10dp"
                     android:text="Save Address"
                     android:textAllCaps="false"
-                    android:textColor="@color/white"
-                    tools:ignore="ButtonStyle,HardcodedText" />
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:stateListAnimator="@null" />
 
             </LinearLayout>
         </ScrollView>

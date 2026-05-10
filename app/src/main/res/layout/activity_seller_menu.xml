@@ -25,6 +25,7 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Title + Add Button row -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -32,6 +33,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
                         android:fontFamily="@font/lexend_black"
                         android:text="Seller Menu"
                         android:textColor="@color/text_primary"
@@ -44,17 +46,20 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:background="@drawable/cta_primary"
-                        android:fontFamily="@font/lexend_bold"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:text="Add Item"
+                        android:background="@drawable/hero_gradient_card"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="10dp"
+                        android:stateListAnimator="@null"
+                        android:text="+ Add Item"
                         android:textAllCaps="false"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        tools:ignore="ButtonStyle,HardcodedText" />
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@null" />
+
                 </RelativeLayout>
 
+                <!-- Subtitle -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -65,6 +70,7 @@
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
 
+                <!-- Loading spinner -->
                 <ProgressBar
                     android:id="@+id/loader"
                     android:layout_width="40dp"
@@ -74,6 +80,7 @@
                     android:indeterminateTint="@color/color_primary"
                     android:visibility="gone" />
 
+                <!-- Menu items list -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvMenu"
                     android:layout_width="match_parent"
@@ -82,6 +89,7 @@
                     android:clipToPadding="false"
                     android:paddingBottom="100dp" />
 
+                <!-- Empty state -->
                 <LinearLayout
                     android:id="@+id/emptyState"
                     android:layout_width="match_parent"
