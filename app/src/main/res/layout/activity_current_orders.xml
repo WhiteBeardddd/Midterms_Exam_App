@@ -14,7 +14,7 @@
 
         <include layout="@layout/layout_top_brand_header" />
 
-        <ScrollView
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
@@ -24,7 +24,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="20dp"
+                android:paddingBottom="40dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -72,7 +73,8 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/lexend_medium"
                         android:text="No Active Orders"
-                        android:textColor="@color/text_muted" />
+                        android:textColor="@color/text_muted"
+                        tools:ignore="HardcodedText" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -81,7 +83,8 @@
                         android:fontFamily="@font/lexend_regular"
                         android:text="Orders from buyers will appear here."
                         android:textColor="@color/text_secondary"
-                        android:textSize="13sp" />
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
 
                 </LinearLayout>
 
@@ -95,7 +98,7 @@
                     android:visibility="gone" />
 
             </LinearLayout>
-        </ScrollView>
+        </androidx.core.widget.NestedScrollView>
 
         <include
             android:id="@+id/navigation_bar"

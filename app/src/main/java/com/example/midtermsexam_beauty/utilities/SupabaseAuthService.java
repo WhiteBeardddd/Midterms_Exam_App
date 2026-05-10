@@ -864,10 +864,10 @@ public class SupabaseAuthService {
                     JSONObject order = orders.getJSONObject(i);
                     String status = order.optString("status", "");
                     double amount = order.optDouble("total_amount", 0);
-                    if (status.equalsIgnoreCase("delivered")) {
+                    if (status.equalsIgnoreCase("done")) {
                         stats.totalSales += amount;
                         stats.completedOrders++;
-                    } else if (!status.equalsIgnoreCase("cancelled")) {
+                    } else if (status.equalsIgnoreCase("pending")) {
                         stats.pendingOrders++;
                     }
                 }
@@ -882,7 +882,8 @@ public class SupabaseAuthService {
             String mBody = readStream(mCode < 300 ? mConn.getInputStream() : mConn.getErrorStream());
             mConn.disconnect();
             if (mCode >= 200 && mCode < 300) stats.totalItems = new JSONArray(mBody).length();
-        } catch (Exception e) { }
+
+        } catch (Exception e) { Log.e(TAG, "getStats error", e); }
         return stats;
     }
 
@@ -1460,5 +1461,106 @@ public class SupabaseAuthService {
             }
         } catch (Exception e) { Log.e(TAG, "saveDescription error", e); }
         return false;
+    }
+
+    public boolean updateOrderStatus(String token, String orderId, String newStatus) {
+        try {
+            JSONObject payload = new JSONObject().put("status", newStatus);
+            return patch("/rest/v1/orders?id=eq." + orderId, payload.toString(), token);
+        } catch (Exception e) {
+            Log.e(TAG, "updateOrderStatus error", e);
+            return false;
+        }
+    }
+
+    // ── Only pending orders for CurrentOrders ─────────────────────────────────
+    public List<OrderDetail> getPendingSellerOrders(String token, String sellerId) {
+        return fetchSellerOrdersByStatus(token, sellerId, "pending");
+    }
+
+    // ── Only done orders for Transactions ────────────────────────────────────
+    public List<OrderDetail> getDoneSellerOrders(String token, String sellerId) {
+        return fetchSellerOrdersByStatus(token, sellerId, "done");
+    }
+
+    private List<OrderDetail> fetchSellerOrdersByStatus(String token, String sellerId, String status) {
+        List<OrderDetail> result = new ArrayList<>();
+        if (token == null || sellerId == null) return result;
+        try {
+            String query = "/rest/v1/orders"
+                    + "?seller_id=eq." + sellerId
+                    + "&status=eq." + status
+                    + "&select="
+                    + "id,"
+                    + "status,"
+                    + "total_amount,"
+                    + "created_at,"
+                    + "profile!orders_buyer_id_fkey(full_name),"
+                    + "buyer_address!orders_buyer_address_id_fkey(street,barangay,city,postal_code,country),"
+                    + "order_items(quantity,unit_price,menu_items(name))"
+                    + "&order=created_at.desc";
+
+            URL url = new URL(getBaseUrl() + query);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("apikey", BuildConfig.SUPABASE_ANON_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+
+            int code = conn.getResponseCode();
+            String body = readStream(code < 300 ? conn.getInputStream() : conn.getErrorStream());
+            conn.disconnect();
+
+            if (code >= 200 && code < 300) {
+                JSONArray arr = new JSONArray(body);
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject o = arr.getJSONObject(i);
+                    OrderDetail od = new OrderDetail();
+
+                    od.orderId     = o.optString("id");
+                    od.status      = o.optString("status", "pending");
+                    od.totalAmount = o.optDouble("total_amount", 0);
+                    od.createdAt   = o.optString("created_at", "");
+
+                    if (!o.isNull("profile")) {
+                        od.buyerFullName = o.getJSONObject("profile")
+                                .optString("full_name", "Unknown Buyer");
+                    } else {
+                        od.buyerFullName = "Unknown Buyer";
+                    }
+
+                    if (!o.isNull("buyer_address")) {
+                        JSONObject addr = o.getJSONObject("buyer_address");
+                        od.street     = addr.optString("street", "");
+                        od.barangay   = addr.optString("barangay", "");
+                        od.city       = addr.optString("city", "");
+                        od.postalCode = String.valueOf(addr.optInt("postal_code", 0));
+                        od.country    = addr.optString("country", "");
+                    }
+
+                    if (!o.isNull("order_items")) {
+                        JSONArray itemsArr = o.getJSONArray("order_items");
+                        for (int j = 0; j < itemsArr.length(); j++) {
+                            JSONObject oi = itemsArr.getJSONObject(j);
+                            OrderItemDetail item = new OrderItemDetail();
+                            item.quantity  = oi.optInt("quantity", 1);
+                            item.unitPrice = oi.optDouble("unit_price", 0);
+                            if (!oi.isNull("menu_items")) {
+                                item.menuItemName = oi.getJSONObject("menu_items")
+                                        .optString("name", "Item");
+                            } else {
+                                item.menuItemName = "Item";
+                            }
+                            od.items.add(item);
+                        }
+                    }
+                    result.add(od);
+                }
+            } else {
+                Log.e(TAG, "fetchSellerOrdersByStatus [" + code + "]: " + body);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "fetchSellerOrdersByStatus error", e);
+        }
+        return result;
     }
 }

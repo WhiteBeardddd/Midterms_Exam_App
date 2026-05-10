@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -44,14 +44,27 @@
                     android:textSize="14sp"
                     tools:ignore="HardcodedText" />
 
+                <!-- Loading spinner -->
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="48dp"
+                    android:indeterminateTint="@color/text_primary"
+                    android:visibility="gone" />
+
+                <!-- Empty state -->
                 <LinearLayout
+                    android:id="@+id/emptyStateCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:background="@drawable/surface_card"
                     android:gravity="center"
                     android:orientation="vertical"
-                    android:padding="40dp">
+                    android:padding="40dp"
+                    android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -60,7 +73,27 @@
                         android:text="No Transaction History"
                         android:textColor="@color/text_muted"
                         tools:ignore="HardcodedText" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:fontFamily="@font/lexend_regular"
+                        android:text="Completed orders will appear here."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        tools:ignore="HardcodedText" />
+
                 </LinearLayout>
+
+                <!-- Completed orders list -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/transactionsRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
 
             </LinearLayout>
         </ScrollView>

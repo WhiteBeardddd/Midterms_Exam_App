@@ -1,21 +1,92 @@
 package com.example.midtermsexam_beauty.views.seller;
 
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.midtermsexam_beauty.R;
+import com.example.midtermsexam_beauty.adapters.SellerHistoryAdapter;
 import com.example.midtermsexam_beauty.adapters.SellerNavCard;
+import com.example.midtermsexam_beauty.utilities.SessionManager;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
+import com.example.midtermsexam_beauty.utilities.SupabaseAuthService.OrderDetail;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Transactions extends AppCompatActivity {
+
+    private RecyclerView            recyclerView;
+    private LinearLayout            emptyStateCard;
+    private ProgressBar             progressBar;
+    private final List<OrderDetail> orderList = new ArrayList<>();
+
+    private SessionManager      sessionManager;
+    private SupabaseAuthService supabase;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transactions);
         hideSystemUI();
         SellerNavCard.setupNavbar(this);
+
+        recyclerView   = findViewById(R.id.transactionsRecyclerView);
+        emptyStateCard = findViewById(R.id.emptyStateCard);
+        progressBar    = findViewById(R.id.progressBar);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setNestedScrollingEnabled(false);
+
+        sessionManager = new SessionManager(this);
+        supabase       = new SupabaseAuthService();
+
+        loadDoneOrders();
+    }
+
+    private void loadDoneOrders() {
+        showLoading(true);
+        String token  = sessionManager.getToken();
+        String authId = sessionManager.getUserId();
+
+        executor.execute(() -> {
+            String sellerId = supabase.getSellerIdByAuthId(token, authId);
+            List<OrderDetail> done = supabase.getDoneSellerOrders(token, sellerId);
+
+            runOnUiThread(() -> {
+                showLoading(false);
+                orderList.clear();
+                orderList.addAll(done != null ? done : new ArrayList<>());
+
+                if (orderList.isEmpty()) {
+                    emptyStateCard.setVisibility(View.VISIBLE);
+                    recyclerView.setVisibility(View.GONE);
+                } else {
+                    emptyStateCard.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    recyclerView.setAdapter(new SellerHistoryAdapter(this, orderList));
+                }
+            });
+        });
+    }
+
+    private void showLoading(boolean show) {
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        if (show) {
+            recyclerView.setVisibility(View.GONE);
+            emptyStateCard.setVisibility(View.GONE);
+        }
     }
 
     private void hideSystemUI() {
@@ -31,6 +102,12 @@ public class Transactions extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         hideSystemUI();
+        loadDoneOrders(); // this is correct for Transactions
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
     }
 }
-

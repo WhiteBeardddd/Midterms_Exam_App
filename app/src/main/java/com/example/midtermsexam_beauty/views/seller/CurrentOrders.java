@@ -1,10 +1,10 @@
 package com.example.midtermsexam_beauty.views.seller;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
@@ -20,19 +20,25 @@ import com.example.midtermsexam_beauty.utilities.SessionManager;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService;
 import com.example.midtermsexam_beauty.utilities.SupabaseAuthService.OrderDetail;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CurrentOrders extends AppCompatActivity {
 
-    private RecyclerView    recyclerView;
-    private LinearLayout    emptyStateCard;
-    private ProgressBar     progressBar;
+    private RecyclerView            recyclerView;
+    private LinearLayout            emptyStateCard;
+    private ProgressBar             progressBar;
+    private SellerOrderAdapter      adapter;
+    private final List<OrderDetail> orderList = new ArrayList<>();
 
     private SessionManager      sessionManager;
     private SupabaseAuthService supabase;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    private String token;
+    private String sellerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +46,7 @@ public class CurrentOrders extends AppCompatActivity {
         setContentView(R.layout.activity_current_orders);
         SellerNavCard.setupNavbar(this);
         hideSystemUI();
+
         recyclerView   = findViewById(R.id.ordersRecyclerView);
         emptyStateCard = findViewById(R.id.emptyStateCard);
         progressBar    = findViewById(R.id.progressBar);
@@ -49,39 +56,72 @@ public class CurrentOrders extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         supabase       = new SupabaseAuthService();
+        token          = sessionManager.getToken();
+
+        adapter = new SellerOrderAdapter(this, orderList, this::markOrderAsDone);
+        recyclerView.setAdapter(adapter);
 
         loadOrders();
     }
 
     private void loadOrders() {
         showLoading(true);
-        String token  = sessionManager.getToken();
         String authId = sessionManager.getUserId();
 
-        // ADD THESE ↓
-        Log.d("CurrentOrders", "token=" + token);
-        Log.d("CurrentOrders", "authId=" + authId);
-
         executor.execute(() -> {
-            String sellerId = supabase.getSellerIdByAuthId(token, authId);
+            sellerId = supabase.getSellerIdByAuthId(token, authId);
 
-            // ADD THIS ↓
-            Log.d("CurrentOrders", "sellerId=" + sellerId);
-
-            List<OrderDetail> orders = supabase.getSellerOrders(token, sellerId);
-
-            // ADD THIS ↓
-            Log.d("CurrentOrders", "orders count=" + (orders == null ? "null" : orders.size()));
+            // ── Fetch only pending orders ─────────────────────────────────────
+            List<OrderDetail> pending = supabase.getPendingSellerOrders(token, sellerId);
 
             runOnUiThread(() -> {
                 showLoading(false);
-                if (orders == null || orders.isEmpty()) {
+                orderList.clear();
+                orderList.addAll(pending != null ? pending : new ArrayList<>());
+                adapter.notifyDataSetChanged();
+
+                if (orderList.isEmpty()) {
                     emptyStateCard.setVisibility(View.VISIBLE);
                     recyclerView.setVisibility(View.GONE);
                 } else {
                     emptyStateCard.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(new SellerOrderAdapter(this, orders));
+                }
+            });
+        });
+    }
+
+    private void markOrderAsDone(OrderDetail order, int position) {
+        executor.execute(() -> {
+            // ── Update status to "done" in Supabase ───────────────────────────
+            boolean success = supabase.updateOrderStatus(token, order.orderId, "done");
+
+            runOnUiThread(() -> {
+                if (success) {
+                    // Find actual index by orderId to avoid position shift bugs
+                    int actualIndex = -1;
+                    for (int i = 0; i < orderList.size(); i++) {
+                        if (orderList.get(i).orderId.equals(order.orderId)) {
+                            actualIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (actualIndex >= 0) {
+                        orderList.remove(actualIndex);
+                        adapter.notifyItemRemoved(actualIndex);
+                        adapter.notifyItemRangeChanged(actualIndex, orderList.size());
+                    }
+
+                    if (orderList.isEmpty()) {
+                        emptyStateCard.setVisibility(View.VISIBLE);
+                        recyclerView.setVisibility(View.GONE);
+                    }
+
+                    Toast.makeText(this, "Order marked as done!", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Failed to update. Try again.", Toast.LENGTH_SHORT).show();
+                    adapter.notifyDataSetChanged();
                 }
             });
         });
@@ -94,6 +134,7 @@ public class CurrentOrders extends AppCompatActivity {
             emptyStateCard.setVisibility(View.GONE);
         }
     }
+
     private void hideSystemUI() {
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
@@ -107,6 +148,7 @@ public class CurrentOrders extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         hideSystemUI();
+        loadOrders();
     }
 
     @Override

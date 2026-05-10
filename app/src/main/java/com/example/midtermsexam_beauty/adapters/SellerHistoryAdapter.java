@@ -1,15 +1,12 @@
 package com.example.midtermsexam_beauty.adapters;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,26 +20,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.OrderViewHolder> {
+public class SellerHistoryAdapter extends RecyclerView.Adapter<SellerHistoryAdapter.OrderViewHolder> {
 
-    public interface OnOrderCompletedListener {
-        void onOrderCompleted(OrderDetail order, int position);
-    }
+    private final Context           context;
+    private final List<OrderDetail> orders;
+    private final LayoutInflater    inflater;
 
-    private final Context                  context;
-    private final List<OrderDetail>        orders;
-    private final LayoutInflater           inflater;
-    private final OnOrderCompletedListener completedListener;
-
-    public SellerOrderAdapter(Context context, List<OrderDetail> orders,
-                              OnOrderCompletedListener completedListener) {
-        this.context           = context;
-        this.orders            = orders;
-        this.inflater          = LayoutInflater.from(context);
-        this.completedListener = completedListener;
+    public SellerHistoryAdapter(Context context, List<OrderDetail> orders) {
+        this.context  = context;
+        this.orders   = orders;
+        this.inflater = LayoutInflater.from(context);
     }
 
     @NonNull
@@ -54,7 +42,7 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
-        holder.bind(orders.get(position), position);
+        holder.bind(orders.get(position));
     }
 
     @Override
@@ -68,9 +56,8 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
         TextView     tvAddress, labelAddress;
         View         dividerAddress;
         LinearLayout itemsContainer;
-        Button       btnMarkDone;
+        View         btnMarkDone;
 
-        @SuppressLint("WrongViewCast")
         OrderViewHolder(@NonNull View itemView) {
             super(itemView);
             tvBuyerName    = itemView.findViewById(R.id.tvBuyerName);
@@ -84,15 +71,16 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
             btnMarkDone    = itemView.findViewById(R.id.btnMarkDone);
         }
 
-        void bind(OrderDetail order, int position) {
+        void bind(OrderDetail order) {
+            // ── Always hide Mark as Done in history ───────────────────────────
+            btnMarkDone.setVisibility(View.GONE);
+
             tvBuyerName.setText(order.buyerFullName);
             tvDate.setText(formatDate(order.createdAt));
 
-            // Status badge
             tvStatus.setText(order.status.toUpperCase(Locale.ROOT));
             tvStatus.setBackground(statusBackground(order.status));
 
-            // Order items
             itemsContainer.removeAllViews();
             for (OrderItemDetail item : order.items) {
                 View row = inflater.inflate(R.layout.item_order_line, itemsContainer, false);
@@ -104,35 +92,19 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
                 itemsContainer.addView(row);
             }
 
-            // Total
             tvTotal.setText("₱" + String.format(Locale.ROOT, "%.2f", order.totalAmount));
 
-            // Address
             boolean hasAddress = order.street != null && !order.street.isEmpty();
             int visibility = hasAddress ? View.VISIBLE : View.GONE;
             dividerAddress.setVisibility(visibility);
             labelAddress.setVisibility(visibility);
             tvAddress.setVisibility(visibility);
+
             if (hasAddress) {
                 String full = order.street + ", " + order.barangay
                         + "\n" + order.city + " " + order.postalCode
                         + "\n" + order.country;
                 tvAddress.setText(full);
-            }
-
-            // ── Mark as Done button ───────────────────────────────────────────
-            // Hide button if already delivered
-            if (order.status.equalsIgnoreCase("delivered")) {
-                btnMarkDone.setVisibility(View.GONE);
-            } else {
-                btnMarkDone.setVisibility(View.VISIBLE);
-                btnMarkDone.setOnClickListener(v -> {
-                    if (completedListener != null) {
-                        btnMarkDone.setEnabled(false);
-                        btnMarkDone.setText("Updating...");
-                        completedListener.onOrderCompleted(order, position);
-                    }
-                });
             }
         }
 
@@ -141,7 +113,7 @@ public class SellerOrderAdapter extends RecyclerView.Adapter<SellerOrderAdapter.
             gd.setCornerRadius(dp(20));
             int color;
             switch (status.toLowerCase(Locale.ROOT)) {
-                case "delivered":  color = 0xFF2E7D32; break;
+                case "done":       color = 0xFF2E7D32; break;
                 case "cancelled":  color = 0xFFC62828; break;
                 case "preparing":  color = 0xFFF57F17; break;
                 case "on the way": color = 0xFF1565C0; break;

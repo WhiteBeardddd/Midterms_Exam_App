@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:layout_marginBottom="12dp"
     android:background="@drawable/surface_card"
-    android:padding="16dp"
-    android:layout_marginBottom="16dp">
+    android:padding="16dp">
 
+    <!-- ── Header row: buyer + status ── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,130 +21,103 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/lexend_bold"
-            android:textSize="15sp"
             android:textColor="@color/text_primary"
-            tools:text="Princess" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/lexend_medium"
-            android:textSize="10sp"
-            android:textColor="@color/white"
             android:paddingStart="10dp"
-            android:paddingEnd="10dp"
             android:paddingTop="4dp"
+            android:paddingEnd="10dp"
             android:paddingBottom="4dp"
-            tools:text="PENDING"
-            tools:background="@color/gray_secondary" />
+            android:fontFamily="@font/lexend_semibold"
+            android:textColor="@color/white"
+            android:textSize="11sp" />
 
     </LinearLayout>
 
-    <!-- Order date -->
+    <!-- Date -->
     <TextView
         android:id="@+id/tvDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:fontFamily="@font/lexend_regular"
-        android:textSize="12sp"
         android:textColor="@color/text_secondary"
-        tools:text="May 09, 2026  08:49 PM" />
+        android:textSize="12sp" />
 
     <!-- Divider -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="6dp"
-        android:background="#1FFFFFFF" />
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="#1AFFFFFF" />
 
-    <!-- Section: Order Items -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/lexend_medium"
-        android:textSize="11sp"
-        android:textAllCaps="true"
-        android:textColor="@color/text_muted"
-        android:paddingBottom="6dp"
-        android:text="Order Items" />
-
-    <!-- Items are injected here -->
+    <!-- Items container -->
     <LinearLayout
         android:id="@+id/itemsContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" />
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
-        android:background="#1FFFFFFF" />
-
-    <!-- Total row -->
-    <LinearLayout
+    <!-- Total -->
+    <TextView
+        android:id="@+id/tvTotal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp">
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/lexend_bold"
+        android:gravity="end"
+        android:textColor="@color/color_primary"
+        android:textSize="15sp" />
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="@font/lexend_medium"
-            android:textSize="14sp"
-            android:textColor="@color/text_primary"
-            android:text="Order Total" />
-
-        <TextView
-            android:id="@+id/tvTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/lexend_bold"
-            android:textSize="14sp"
-            android:textColor="@color/color_primary"
-            tools:text="₱783.97" />
-
-    </LinearLayout>
-
-    <!-- Divider (conditionally visible) -->
+    <!-- Address divider -->
     <View
         android:id="@+id/dividerAddress"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
-        android:background="#1FFFFFFF"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="#1AFFFFFF"
         android:visibility="gone" />
 
-    <!-- Section: Delivery Address (conditionally visible) -->
+    <!-- Address label -->
     <TextView
         android:id="@+id/labelAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/lexend_medium"
-        android:textSize="11sp"
-        android:textAllCaps="true"
-        android:textColor="@color/text_muted"
-        android:paddingBottom="6dp"
+        android:fontFamily="@font/lexend_semibold"
         android:text="Delivery Address"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
         android:visibility="gone" />
 
+    <!-- Address value -->
     <TextView
         android:id="@+id/tvAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/lexend_regular"
+        android:textColor="@color/text_primary"
         android:textSize="13sp"
-        android:textColor="@color/text_secondary"
-        android:visibility="gone"
-        tools:text="Bankal, Mahayahay&#10;Lapu-Lapu City 7777&#10;Ph" />
+        android:visibility="gone" />
+
+    <!-- ── Mark as Done button ── -->
+    <Button
+        android:id="@+id/btnMarkDone"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/cta_primary"
+        android:elevation="0dp"
+        android:fontFamily="@font/lexend_semibold"
+        android:text="Mark as Done"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="13sp" />
 
 </LinearLayout>
